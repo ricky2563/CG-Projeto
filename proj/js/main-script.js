@@ -28,13 +28,13 @@ function createGarra() {
     var big_cube;
     material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
     big_cube = new THREE.Mesh(new THREE.BoxGeometry(5, 5, 5), material);
-    big_cube.position.set(0,0,0);
+    big_cube.position.set(0,0,10);
     garra = new THREE.Object3D();
     garra.add(big_cube);
-    add_finger(garra, 2, -3, 2);
-    add_finger(garra, -2, -3, 2);
-    add_finger(garra, 2, -3, -2);
-    add_finger(garra, -2, -3, -2);
+    add_finger(garra, 2, -3, 12);
+    add_finger(garra, -2, -3, 12);
+    add_finger(garra, 2, -3, 8);
+    add_finger(garra, -2, -3, 8);
     cameraMovelPerspectiva = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
     // Posicionar a câmera móvel no gancho da grua (supondo que o gancho está em (0, 0, 0))
     cameraMovelPerspectiva.position.set(0, -2.5 , 0); 
@@ -46,12 +46,12 @@ function createGarra() {
 
 function createConjuntoCarrinho() {
     cable = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 10, 32), material);
-    cable.position.set(0, 7, 0);
+    cable.position.set(0, 7, 10);
     cable_garra = new THREE.Object3D();
     cable_garra.add(garra);
     cable_garra.add(cable);
     var carrinho = new THREE.Mesh(new THREE.BoxGeometry(15, 5, 20), material);
-    carrinho.position.set(0, 15, 0);
+    carrinho.position.set(0, 15, 10);
     conjunto_carrinho = new THREE.Object3D();
     conjunto_carrinho.add(carrinho);
     conjunto_carrinho.add(cable_garra);
@@ -97,8 +97,6 @@ function createContentorCargas() {
     carga4.position.set(-57, -50, -44);
     scene.add(carga4);
     //var contentor_box = new THREE.BoxGeometry(30, 10, 20);
-    
-
 
     var color = new THREE.MeshBasicMaterial({ color: 0xf97306 })
 
@@ -227,6 +225,8 @@ function onKeyDown(event) {
 
         case 87: //w
         case 119: //W
+            if (conjunto_carrinho.position.z >=58) { 
+                break; }
             var translationVector = new THREE.Vector3(0, 0, 0.5);
             translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), conjunto_carrinho.rotation.y);
             conjunto_carrinho.position.add(translationVector);
@@ -234,6 +234,8 @@ function onKeyDown(event) {
 
         case 83: //s
         case 115: //S
+            if (conjunto_carrinho.position.z <= 10) { 
+                break; }
             var translationVector = new THREE.Vector3(0, 0, -0.5);
             translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), conjunto_carrinho.rotation.y);
             conjunto_carrinho.position.add(translationVector);
@@ -267,6 +269,9 @@ function onKeyDown(event) {
 
         case 69: //E
         case 101: //e
+            console.log(garra.position.y);
+            if (garra.position.y <= -50) { 
+                break; }
             var translationVector = new THREE.Vector3(0, -0.5, 0);
             translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
             garra.position.add(translationVector);
@@ -278,6 +283,9 @@ function onKeyDown(event) {
 
         case 68: //D
         case 100: //d
+            console.log(garra.position.y);
+            if (garra.position.y >= 10) { 
+                break; }
             var translationVector = new THREE.Vector3(0, 0.5, 0);
             translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
             garra.position.add(translationVector);
