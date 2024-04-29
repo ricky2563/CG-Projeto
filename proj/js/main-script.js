@@ -57,6 +57,24 @@ function createConjuntoCarrinho() {
     conjunto_carrinho.add(cable_garra);
 }
 
+
+function createTetrahedron(obj, radius){
+    var vertices = [
+        new THREE.Vector3(0, 40, -10),
+        new THREE.Vector3(-10, 0, -10),
+        new THREE.Vector3(10, 0, -10),
+        new THREE.Vector3(0, 0, 10)
+    ];
+    var indices = [ 0,  1,  2,   0,  2,  3,    0,  3,  1,    1,  3,  2];
+    geometry = new THREE.BufferGeometry();
+    geometry.setFromPoints(vertices);
+    geometry.setIndex(indices);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(0, 0, 0);
+    obj.add(mesh)
+    
+}
+
 function createTopoGrua() {
     var traçao_do_carrinho = new THREE.Mesh(new THREE.BoxGeometry(20, 5, 90), material);
     traçao_do_carrinho.position.set(0, 0, 35);
@@ -69,6 +87,7 @@ function createTopoGrua() {
     topo_grua.add(traçao_do_carrinho);
     topo_grua.add(lança);
     topo_grua.add(contra_lança);
+    createTetrahedron(topo_grua, 20);
     topo_grua.position.set(0, 20, 0);
 }
 
@@ -203,9 +222,7 @@ function onResize() {
 function onKeyDown(event) {
     switch (event.keyCode) {
 
-        case 70: //F
-
-        case 102: //f
+        case 55: // Tecla '7' - Wireframe
             scene.traverse(function (node) {
                 if (node instanceof THREE.Mesh) {
                     node.material.wireframe = !node.material.wireframe;
