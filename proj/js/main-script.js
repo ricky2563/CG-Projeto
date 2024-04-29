@@ -6,6 +6,8 @@ var geometry, material, mesh;
 
 var garra, cable_garra, cable, conjunto_carrinho, topo_grua, topo;
 
+var contentor, carga1, carga1, carga2, carga3, carga4, carga5, carga6;
+
 var cameraFrontal, cameraLateral, cameraTopo, cameraFixaOrtogonal, cameraFixaPerspectiva, cameraMovelPerspectiva;
 
 function add_finger(obj, x, y, z) {
@@ -81,6 +83,53 @@ function createGrua(x, y, z) {
     scene.add(topo);
 }
 
+function createContentorCargas() {
+    carga1 = new THREE.Mesh(new THREE.DodecahedronGeometry(2, 0), new THREE.MeshBasicMaterial( { color: 0x08080 } ));
+    carga1.position.set(77, -50, 50);
+    scene.add(carga1);
+    carga2 = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 0), new THREE.MeshBasicMaterial( { color: 0x00080 } ));
+    carga2.position.set(-77, -50, 30);
+    scene.add(carga2);
+    carga3 = new THREE.Mesh(new THREE.TorusKnotGeometry( 1, 0.4, 100, 2 ), new THREE.MeshBasicMaterial( { color: 0x08000 } ));
+    carga3.position.set(57, -50, -44);
+    scene.add(carga3);
+    carga4 = new THREE.Mesh(new THREE.TorusGeometry(1, 0.8, 12, 48), new THREE.MeshBasicMaterial( { color: 0xff70cb } ));
+    carga4.position.set(-57, -50, -44);
+    scene.add(carga4);
+    //var contentor_box = new THREE.BoxGeometry(30, 10, 20);
+    
+
+
+    var color = new THREE.MeshBasicMaterial({ color: 0xf97306 })
+
+    // Create planes for each side except the top
+    var plane1 = new THREE.Mesh(new THREE.PlaneGeometry(15, 30), color); //laranja
+    plane1.rotation.set(-Math.PI / 2, 0, 0); // Bottom
+    plane1.position.set(37.5, -50, -30);
+    scene.add(plane1);
+
+    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0xffff00 })); //amarelo
+    plane2.rotation.set(0, 0, 0); // Front
+    plane2.position.set(37.5, -45, -15);
+    scene.add(plane2);
+
+    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0xff00ff })); //rosa
+    plane3.rotation.set(0, Math.PI / 2, 0); // Left
+    plane3.position.set(45, -45, -30);
+    scene.add(plane3);
+
+    var plane4 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0x00ff00 })); //verde
+    plane4.rotation.set(0, Math.PI / 2, 0); // Right
+    plane4.position.set(30, -45, -30);
+    scene.add(plane4);
+
+    var plane5 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0x00ffff })); //azul
+    plane5.rotation.set(0, 0, 0); // Front
+    plane5.position.set(37.5, -45, -45);
+    scene.add(plane5);
+
+}
+
 /* CREATE SCENE*/
 
 function createScene() {
@@ -89,10 +138,11 @@ function createScene() {
     scene = new THREE.Scene();
 
     scene.add(new THREE.AxesHelper(10));
-    scene.background = new THREE.Color(0x000000);
+    scene.background = new THREE.Color(0xffffff);
 
     //createTable(0,0,0);
     createGrua(0,0,0);
+    createContentorCargas();
 
 }
 
