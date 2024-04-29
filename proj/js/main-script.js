@@ -4,7 +4,7 @@ var camera, scene, renderer;
 
 var geometry, material, mesh;
 
-var garra, cable_garra, cable, conjunto_carrinho, topo_grua, topo;
+var garra, cable_garra, cable, conjunto_carrinho, topo_grua, topo, base_grua;
 
 var contentor, carga1, carga1, carga2, carga3, carga4, carga5, carga6;
 
@@ -26,7 +26,6 @@ function add_finger(obj, x, y, z) {
 function createGarra() {
     'use strict';
     var big_cube;
-    material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
     big_cube = new THREE.Mesh(new THREE.BoxGeometry(5, 5, 5), material);
     big_cube.position.set(0,0,10);
     garra = new THREE.Object3D();
@@ -55,6 +54,7 @@ function createConjuntoCarrinho() {
     conjunto_carrinho = new THREE.Object3D();
     conjunto_carrinho.add(carrinho);
     conjunto_carrinho.add(cable_garra);
+    conjunto_carrinho.position.z = 10;
 }
 
 
@@ -82,42 +82,78 @@ function createTopoGrua() {
     lança.position.set(0, 5, 45);
     var contra_lança = new THREE.Mesh(new THREE.BoxGeometry(20, 5, 40), material);
     contra_lança.position.set(0, 0, -30);
+    var contra_peso = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 30), material);
+    contra_peso.position.set(0, -8, -30);
+    var cabinete = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 20), material);
+    cabinete.position.set(0, -8, 0);
 
     topo_grua = new THREE.Object3D();
     topo_grua.add(traçao_do_carrinho);
     topo_grua.add(lança);
     topo_grua.add(contra_lança);
-    createTetrahedron(topo_grua, 20);
-    topo_grua.position.set(0, 20, 0);
-}
+    topo_grua.add(contra_peso);
+    topo_grua.add(cabinete);
 
-function createGrua(x, y, z) {
-    material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-    createGarra();
-    createConjuntoCarrinho();
-    createTopoGrua();
+    createTetrahedron(topo_grua, 20);
+    var vertices_tirant1 = [
+        new THREE.Vector3(0, 40, -10),
+        new THREE.Vector3(0, 0, 80),
+    ];
+    geometry = new THREE.BufferGeometry().setFromPoints(vertices_tirant1);
+    var tirant1 = new THREE.Line(geometry, material);
+    topo_grua.add(tirant1);
+    var vertices_tirant2 = [
+        new THREE.Vector3(0, 40, -10),
+        new THREE.Vector3(0, 0, -40),
+    ];
+    geometry = new THREE.BufferGeometry().setFromPoints(vertices_tirant2);
+    var tirant2 = new THREE.Line(geometry, material);
+    topo_grua.add(tirant2);
+    topo_grua.add(tirant1);
+    topo_grua.position.set(0, 20, 0);
     topo = new THREE.Object3D();
     topo.add(topo_grua);
     topo.add(conjunto_carrinho);
+    topo.position.set(0, 65, 0);
     scene.add(topo);
 }
 
+function createBaseGrua() {
+    var base = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 30), material);
+    base.position.set(0, 5, 0);
+    var suporte = new THREE.Mesh(new THREE.BoxGeometry(20, 65, 20), material);
+    suporte.position.set(0, 40, 0);
+    base_grua = new THREE.Object3D();
+    base_grua.add(base);
+    base_grua.add(suporte);
+    scene.add(base_grua);
+
+}
+
+function createGrua() {
+    material = new THREE.MeshBasicMaterial({ color: 0x7d7d7d, wireframe: true });  // NÂO SEI SE PORQUE MAS NÃO ESTÁ A MUDAR
+    createGarra();
+    createConjuntoCarrinho();
+    createTopoGrua();
+    createBaseGrua();
+}
+
 function createContentorCargas() {
-    carga1 = new THREE.Mesh(new THREE.DodecahedronGeometry(2, 0), new THREE.MeshBasicMaterial( { color: 0x08080 } ));
+    carga1 = new THREE.Mesh(new THREE.DodecahedronGeometry(2, 0), new THREE.MeshBasicMaterial( { color: 0x08080, wireframe: true } ));
     carga1.position.set(77, -50, 50);
     scene.add(carga1);
-    carga2 = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 0), new THREE.MeshBasicMaterial( { color: 0x00080 } ));
+    carga2 = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 0), new THREE.MeshBasicMaterial( { color: 0x00080, wireframe: true } ));
     carga2.position.set(-77, -50, 30);
     scene.add(carga2);
-    carga3 = new THREE.Mesh(new THREE.TorusKnotGeometry( 1, 0.4, 100, 2 ), new THREE.MeshBasicMaterial( { color: 0x08000 } ));
+    carga3 = new THREE.Mesh(new THREE.TorusKnotGeometry( 1, 0.4, 100, 2 ), new THREE.MeshBasicMaterial( { color: 0x08000, wireframe: true } ));
     carga3.position.set(57, -50, -44);
     scene.add(carga3);
-    carga4 = new THREE.Mesh(new THREE.TorusGeometry(1, 0.8, 12, 48), new THREE.MeshBasicMaterial( { color: 0xff70cb } ));
+    carga4 = new THREE.Mesh(new THREE.TorusGeometry(1, 0.8, 12, 48), new THREE.MeshBasicMaterial( { color: 0xff70cb, wireframe: true } ));
     carga4.position.set(-57, -50, -44);
     scene.add(carga4);
     //var contentor_box = new THREE.BoxGeometry(30, 10, 20);
 
-    var color = new THREE.MeshBasicMaterial({ color: 0xf97306 })
+    var color = new THREE.MeshBasicMaterial({ color: 0xf97306 , wireframe: true});
 
     // Create planes for each side except the top
     var plane1 = new THREE.Mesh(new THREE.PlaneGeometry(15, 30), color); //laranja
@@ -125,22 +161,22 @@ function createContentorCargas() {
     plane1.position.set(37.5, -50, -30);
     scene.add(plane1);
 
-    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0xffff00 })); //amarelo
+    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0xffff00 , wireframe: true})); //amarelo
     plane2.rotation.set(0, 0, 0); // Front
     plane2.position.set(37.5, -45, -15);
     scene.add(plane2);
 
-    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0xff00ff })); //rosa
+    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true  })); //rosa
     plane3.rotation.set(0, Math.PI / 2, 0); // Left
     plane3.position.set(45, -45, -30);
     scene.add(plane3);
 
-    var plane4 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0x00ff00 })); //verde
+    var plane4 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0x00ff00 , wireframe: true})); //verde
     plane4.rotation.set(0, Math.PI / 2, 0); // Right
     plane4.position.set(30, -45, -30);
     scene.add(plane4);
 
-    var plane5 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0x00ffff })); //azul
+    var plane5 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true })); //azul
     plane5.rotation.set(0, 0, 0); // Front
     plane5.position.set(37.5, -45, -45);
     scene.add(plane5);
@@ -158,7 +194,7 @@ function createScene() {
     scene.background = new THREE.Color(0xffffff);
 
     //createTable(0,0,0);
-    createGrua(0,0,0);
+    createGrua();
     createContentorCargas();
 
 }
@@ -169,29 +205,29 @@ function createCameras() {
     'use strict';
     cameraFrontal = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 500);
     cameraFrontal.position.x = 0;
-    cameraFrontal.position.y = 0;
-    cameraFrontal.position.z = 150;
+    cameraFrontal.position.y = 100;
+    cameraFrontal.position.z = 170;
     cameraFrontal.lookAt(scene.position);
     scene.add(cameraFrontal);
 
     cameraLateral = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
-    cameraLateral.position.x = 150;
-    cameraLateral.position.y = 0;
+    cameraLateral.position.x = 170;
+    cameraLateral.position.y = 100;
     cameraLateral.position.z = 0;
     cameraLateral.lookAt(scene.position);
     scene.add(cameraLateral);
 
     cameraTopo = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
     cameraTopo.position.x = 0;
-    cameraTopo.position.y = 150;
+    cameraTopo.position.y = 170;
     cameraTopo.position.z = 0;
     cameraTopo.lookAt(scene.position);
     scene.add(cameraTopo);
 
     cameraFixaOrtogonal = new THREE.OrthographicCamera(-10, 10, 10, -10, 1, 1000); // ? Não entendi os valores
-    cameraFixaOrtogonal.position.x = 120;
-    cameraFixaOrtogonal.position.y = 120;
-    cameraFixaOrtogonal.position.z = 120;    
+    cameraFixaOrtogonal.position.x = 170;
+    cameraFixaOrtogonal.position.y = 170;
+    cameraFixaOrtogonal.position.z = 170;    
     cameraFixaOrtogonal.lookAt(scene.position);
     scene.add(cameraFixaOrtogonal);
 
