@@ -4,7 +4,7 @@ var camera, scene, renderer;
 
 var geometry, material, mesh;
 
-var garra, cable_garra, conjunto_carrinho, topo_grua, topo;
+var garra, cable_garra, cable, conjunto_carrinho, topo_grua, topo;
 
 var cameraFrontal, cameraLateral, cameraTopo, cameraFixaOrtogonal, cameraFixaPerspectiva, cameraMovelPerspectiva;
 
@@ -43,7 +43,7 @@ function createGarra() {
 }
 
 function createConjuntoCarrinho() {
-    var cable = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 10, 32), material);
+    cable = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 10, 32), material);
     cable.position.set(0, 7, 0);
     cable_garra = new THREE.Object3D();
     cable_garra.add(garra);
@@ -212,6 +212,30 @@ function onKeyDown(event) {
         case 54: // Tecla '6' - Câmera móvel perspectiva
             renderer.render(scene, cameraMovelPerspectiva);
             camera = cameraMovelPerspectiva;
+
+            break;
+
+        case 69: //E
+        case 101: //e
+            var translationVector = new THREE.Vector3(0, -0.5, 0);
+            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
+            garra.position.add(translationVector);
+            cable.scale.y += 0.05;
+            translationVector = new THREE.Vector3(0, -0.25, 0);
+            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), cable.rotation.y);
+            cable.position.add(translationVector);
+            break;
+
+        case 68: //D
+        case 100: //d
+            var translationVector = new THREE.Vector3(0, 0.5, 0);
+            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
+            garra.position.add(translationVector);
+            cable.scale.y -= 0.05; 
+            translationVector = new THREE.Vector3(0, 0.25, 0);
+            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), cable.rotation.y);
+            cable.position.add(translationVector);
+
             break;
     }
 }
