@@ -6,7 +6,8 @@ var geometry, material, mesh;
 
 var garra, cable_garra, cable, conjunto_carrinho, topo_grua, topo, base_grua;
 
-var contentor, carga1, carga1, carga2, carga3, carga4, carga5, carga6;
+var contentor;
+var cargas;
 
 var cameraFrontal, cameraLateral, cameraTopo, cameraFixaOrtogonal, cameraFixaPerspectiva, cameraMovelPerspectiva;
 
@@ -139,48 +140,58 @@ function createGrua() {
 }
 
 function createContentorCargas() {
-    carga1 = new THREE.Mesh(new THREE.DodecahedronGeometry(2, 0), new THREE.MeshBasicMaterial( { color: 0x08080, wireframe: true } ));
-    carga1.position.set(77, -50, 50);
+    var carga1 = new THREE.Mesh(new THREE.DodecahedronGeometry(3, 1), new THREE.MeshBasicMaterial( { color: 0x08080, wireframe: true } ));
+    carga1.position.set(77, 2, 50);
     scene.add(carga1);
-    carga2 = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 0), new THREE.MeshBasicMaterial( { color: 0x00080, wireframe: true } ));
-    carga2.position.set(-77, -50, 30);
+    var carga2 = new THREE.Mesh(new THREE.IcosahedronGeometry(3, 0), new THREE.MeshBasicMaterial( { color: 0x00080, wireframe: true } ));
+    carga2.position.set(-77, 2, 30);
     scene.add(carga2);
-    carga3 = new THREE.Mesh(new THREE.TorusKnotGeometry( 1, 0.4, 100, 2 ), new THREE.MeshBasicMaterial( { color: 0x08000, wireframe: true } ));
-    carga3.position.set(57, -50, -44);
+    var carga3 = new THREE.Mesh(new THREE.TorusKnotGeometry( 1, 0.4, 100, 2 ), new THREE.MeshBasicMaterial( { color: 0x08000, wireframe: true } ));
+    carga3.position.set(57, 2, -44);
     scene.add(carga3);
-    carga4 = new THREE.Mesh(new THREE.TorusGeometry(1, 0.8, 12, 48), new THREE.MeshBasicMaterial( { color: 0xff70cb, wireframe: true } ));
-    carga4.position.set(-57, -50, -44);
+    var carga4 = new THREE.Mesh(new THREE.TorusGeometry(1, 1, 12, 48), new THREE.MeshBasicMaterial( { color: 0xff70cb, wireframe: true } ));
+    carga4.position.set(-47, 2, -34);
     scene.add(carga4);
-    //var contentor_box = new THREE.BoxGeometry(30, 10, 20);
+    
+    cargas = [carga1, carga2, carga3, carga4];
 
     var color = new THREE.MeshBasicMaterial({ color: 0xf97306 , wireframe: true});
 
     // Create planes for each side except the top
     var plane1 = new THREE.Mesh(new THREE.PlaneGeometry(15, 30), color); //laranja
     plane1.rotation.set(-Math.PI / 2, 0, 0); // Bottom
-    plane1.position.set(37.5, -50, -30);
+    plane1.position.set(37.5, 0, -30);
     scene.add(plane1);
 
     var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0xffff00 , wireframe: true})); //amarelo
     plane2.rotation.set(0, 0, 0); // Front
-    plane2.position.set(37.5, -45, -15);
+    plane2.position.set(37.5, 5, -15);
     scene.add(plane2);
 
     var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true  })); //rosa
     plane3.rotation.set(0, Math.PI / 2, 0); // Left
-    plane3.position.set(45, -45, -30);
+    plane3.position.set(45, 5, -30);
     scene.add(plane3);
 
     var plane4 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0x00ff00 , wireframe: true})); //verde
     plane4.rotation.set(0, Math.PI / 2, 0); // Right
-    plane4.position.set(30, -45, -30);
+    plane4.position.set(30, 5, -30);
     scene.add(plane4);
 
     var plane5 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true })); //azul
     plane5.rotation.set(0, 0, 0); // Front
-    plane5.position.set(37.5, -45, -45);
+    plane5.position.set(37.5, 5, -45);
     scene.add(plane5);
 
+    contentor = [plane1, plane2, plane3, plane4, plane5];
+
+}
+
+function createChao() {
+    var chao = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshBasicMaterial({ color: 0xff1299 }));  
+    chao.rotation.set(-Math.PI / 2, 0, 0); // Bottom
+    chao.position.set(37.5, 0, -30);
+    scene.add(chao);
 }
 
 /* CREATE SCENE*/
@@ -196,6 +207,7 @@ function createScene() {
     //createTable(0,0,0);
     createGrua();
     createContentorCargas();
+    createChao();    
 
 }
 
@@ -223,11 +235,11 @@ function createCameras() {
     cameraTopo.position.z = 0;
     cameraTopo.lookAt(scene.position);
     scene.add(cameraTopo);
-
+    // TODO: Mudar para (170, 170, 170) (mudei para ajudar a ver a colisão)
     cameraFixaOrtogonal = new THREE.OrthographicCamera(-10, 10, 10, -10, 1, 1000); // ? Não entendi os valores
-    cameraFixaOrtogonal.position.x = 170;
-    cameraFixaOrtogonal.position.y = 170;
-    cameraFixaOrtogonal.position.z = 170;    
+    cameraFixaOrtogonal.position.x = 20;
+    cameraFixaOrtogonal.position.y = 10;
+    cameraFixaOrtogonal.position.z = -30;    
     cameraFixaOrtogonal.lookAt(scene.position);
     scene.add(cameraFixaOrtogonal);
 
@@ -242,6 +254,25 @@ function createCameras() {
     camera = cameraFixaPerspectiva;
 }
 
+
+/* CREATE LIGHT(S) */
+
+/* CREATE OBJECT3D(S) */
+
+/* CHECK COLLISIONS */
+
+/* HANDLE COLLISIONS */
+
+/* UPDATE */
+
+/* DISPLAY */
+
+/* INITIALIZE ANIMATION CYCLE */
+
+/* ANIMATION CYCLE */
+
+/* RESIZE WINDOW CALLBACK */
+
 function onResize() {
     'use strict';
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -251,6 +282,30 @@ function onResize() {
         camera.updateProjectionMatrix();
     }
 
+}
+
+/* KEY DOWN CALLBACK */
+// TODO: verificar posição x e y para ver se é a carga em que estamos em cima
+function checkColisao() {
+    var colisao = false;
+    var limiteCarga = 0;
+
+    var garraPosicaoRelativa = new THREE.Vector3();
+    garra.getWorldPosition(garraPosicaoRelativa);
+    base_grua.worldToLocal(garraPosicaoRelativa);
+    var limiteGarra = garraPosicaoRelativa.y - (garra.scale.y / 2) - 3.5; //posição relativa à base,- a posição y da base(0.5), - a alturra dos dedos (3), - espaço do centro da garra ao seu limite
+    console.log("Posição relativa da garra:", garraPosicaoRelativa);
+    console.log("limiteGarra: " + limiteGarra + " limiteCarga: " );
+    for (var i = 0; i < cargas.length; i++) {
+        limiteCarga = cargas[i].position.y + (cargas[i].scale.y / 2);
+        console.log(limiteCarga);
+        if (limiteGarra <= limiteCarga) {
+            console.log("Colisao");
+            colisao = true;
+            break;
+        }
+    }
+    return colisao;
 }
 
 /* KEYDOWN */
@@ -317,13 +372,12 @@ function onKeyDown(event) {
         case 54: // Tecla '6' - Câmera móvel perspectiva
             renderer.render(scene, cameraMovelPerspectiva);
             camera = cameraMovelPerspectiva;
-
-            break;
-
         case 69: //E
         case 101: //e
-            console.log(garra.position.y);
-            if (garra.position.y <= -50) { 
+            if(garra.position.y <= -50) { 
+                checkColisao();
+            }
+            if (garra.position.y <= -60) { 
                 break; }
             var translationVector = new THREE.Vector3(0, -0.5, 0);
             translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
