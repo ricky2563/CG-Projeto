@@ -1,4 +1,12 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { VRButton } from 'three/addons/webxr/VRButton.js';
+import * as Stats from 'three/addons/libs/stats.module.js';
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+
+//////////////////////
+/* GLOBAL VARIABLES */
+//////////////////////
 
 var camera, scene, renderer;
 
@@ -10,6 +18,10 @@ var contentor;
 var cargas;
 
 var cameraFrontal, cameraLateral, cameraTopo, cameraFixaOrtogonal, cameraFixaPerspectiva, cameraMovelPerspectiva;
+
+var boundingBoxGarra, boundingBoxes;
+
+var cabineDireita, cabineEsquerda, carrinhoIn, carrinhoOut, garraDesce, garraSobe = false;
 
 function add_finger(obj, x, y, z) {
     var cub, t, g;
@@ -41,6 +53,9 @@ function createGarra() {
     cameraMovelPerspectiva.lookAt(0,cameraMovelPerspectiva.position.y - 1,0); // Apontar para baixo
     garra.position.set(0, -20, 0);
     garra.add(cameraMovelPerspectiva);
+    const box = new THREE.Box3();
+
+    boundingBoxGarra = new THREE.Box3().setFromObject(garra);
 
     scene.add(garra);
 }
@@ -150,6 +165,10 @@ function createContentorCargas() {
     scene.add(carga4);
     
     cargas = [carga1, carga2, carga3, carga4];
+    boundingBoxes = [];
+    for(var i = 0; i < cargas.length; i++){
+        boundingBoxes[i] = new THREE.Box3().setFromObject(cargas[i]);
+    }
 
     var color = new THREE.MeshBasicMaterial({ color: 0xf97306 , wireframe: true});
 
@@ -157,29 +176,35 @@ function createContentorCargas() {
     var plane1 = new THREE.Mesh(new THREE.PlaneGeometry(15, 30), color); //laranja
     plane1.rotation.set(-Math.PI / 2, 0, 0); // Bottom
     plane1.position.set(37.5, 0, -30);
-    scene.add(plane1);
+   // scene.add(plane1);
 
     var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0xffff00 , wireframe: true})); //amarelo
     plane2.rotation.set(0, 0, 0); // Front
     plane2.position.set(37.5, 5, -15);
-    scene.add(plane2);
+    //scene.add(plane2);
 
     var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true  })); //rosa
     plane3.rotation.set(0, Math.PI / 2, 0); // Left
     plane3.position.set(45, 5, -30);
-    scene.add(plane3);
+    //scene.add(plane3);
 
     var plane4 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0x00ff00 , wireframe: true})); //verde
     plane4.rotation.set(0, Math.PI / 2, 0); // Right
     plane4.position.set(30, 5, -30);
-    scene.add(plane4);
+    //scene.add(plane4);
 
     var plane5 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true })); //azul
     plane5.rotation.set(0, 0, 0); // Front
     plane5.position.set(37.5, 5, -45);
-    scene.add(plane5);
+    //scene.add(plane5);
 
-    contentor = [plane1, plane2, plane3, plane4, plane5];
+    contentor = new THREE.Object3D();
+    contentor.add(plane1);
+    contentor.add(plane2);
+    contentor.add(plane3);
+    contentor.add(plane4);
+    contentor.add(plane5);
+    scene.add(contentor);
 
 }
 
@@ -207,7 +232,9 @@ function createScene() {
 
 }
 
-/* CREATE CAMERAS */
+//////////////////////
+/* CREATE CAMERA(S) */
+//////////////////////
 
 function createCameras() {
     'use strict';
@@ -251,24 +278,227 @@ function createCameras() {
 }
 
 
+/////////////////////
 /* CREATE LIGHT(S) */
+/////////////////////
 
+////////////////////////
 /* CREATE OBJECT3D(S) */
+////////////////////////
 
+//////////////////////
 /* CHECK COLLISIONS */
+//////////////////////
+function checkCollisions(){
+    'use strict';
 
+    boundingBoxGarra.setFromObject(garra);
+    for (var i = 0; i < cargas.length; i++) {
+        boundingBoxes[i].setFromObject(cargas[i]);
+
+        if (boundingBoxGarra.intersectsBox(boundingBoxes[i])) {
+            console.log("Colisão detectada!");
+            handleCollisions(cargas[i]);
+            break;
+        }
+    }
+}
+
+///////////////////////
 /* HANDLE COLLISIONS */
+///////////////////////
+function handleCollisions(carga){
+    'use strict';
 
+    // Calcula o vetor de direção entre a carga e o contentor
+    var direction = new THREE.Vector3().subVectors(contentor.position, carga.position).normalize();
+
+    // Configura o tempo de duração da animação
+    var duration = 5000; // Duração da animação em milissegundos
+    var startTime = Date.now();
+    console.log("transportarCarga");
+    garra.add(carga);
+    var translationVector = new THREE.Vector3(0, 0.5, 0);
+    translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
+    garra.position.add(translationVector);
+    cable.scale.y -= 1.05; 
+    translationVector = new THREE.Vector3(0, 0.25, 0);
+    translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), cable.rotation.y);
+    cable.position.add(translationVector);
+
+    // Função de animação que será chamada a cada quadro
+    function animate() {
+        var now = Date.now();
+        var elapsedTime = now - startTime;
+        if (elapsedTime < duration) {
+            // Calcula a posição intermediária usando .lerp()
+            var t = elapsedTime / duration;
+            carga.position.lerpVectors(carga.position, contentor.position, t);
+            // Requer outro quadro para continuar a animação
+            requestAnimationFrame(animate);
+        } else {
+            // Animação concluída, faça algo se necessário
+            garra.remove(carga);
+            console.log("Transporte concluído!");
+        }
+    }
+
+    // Inicia a animação
+    animate();
+
+    /*function transportarCarga(carga) {
+        // Número de translações desejadas
+        var numeroDeTranslacoes = 2;
+        // Contador de translações realizadas
+        var translacoesRealizadas = 0;
+    
+        // Configura o tempo de duração da animação de translação
+        var durationTranslacao = 5000; // Duração da animação em milissegundos
+        var startTimeTranslacao = Date.now();
+    
+        console.log("transportarCarga");
+    
+        // Função de animação de translação que será chamada a cada quadro
+        function animateTranslacao() {
+            var now = Date.now();
+            var elapsedTime = now - startTimeTranslacao;
+            if (elapsedTime < durationTranslacao && translacoesRealizadas < numeroDeTranslacoes) {
+                // Calcula a posição intermediária usando .lerp()
+                var t = elapsedTime / durationTranslacao;
+                carga.position.lerpVectors(carga.position, contentor.position, t);
+                // Requer outro quadro para continuar a animação
+                requestAnimationFrame(animateTranslacao);
+            } else {
+                // Translação concluída, faça algo se necessário
+                // Verificar se ainda é necessário girar a grua
+                if (translacoesRealizadas < numeroDeTranslacoes) {
+                    translacoesRealizadas++;
+                    // Realize a translação novamente se ainda houver translações restantes
+                    startTimeTranslacao = Date.now();
+                    requestAnimationFrame(animateTranslacao);
+                } else {
+                    // Iniciar rotação da grua em direção ao contentor
+                    iniciarRotacaoGrua();
+                }
+            }
+        }
+    
+        // Inicia a animação de translação
+        animateTranslacao();
+    }
+    
+    // Função para iniciar a rotação da grua em direção ao contentor
+    function iniciarRotacaoGrua() {
+        // Aqui você pode adicionar a lógica para iniciar a rotação da grua
+        // por exemplo:
+        // var anguloAlvo = ...; // Calcular o ângulo necessário para a grua girar em direção ao contentor
+        // grua.rotation.y = anguloAlvo; // Definir o ângulo da rotação da grua diretamente
+    
+        console.log("Iniciando rotação da grua");
+    }
+*/    
+}
+
+
+
+////////////
 /* UPDATE */
+////////////
+function update(){
+    'use strict';
 
+}
+
+/////////////
 /* DISPLAY */
+/////////////
+function render() {
+    'use strict';
+    renderer.render(scene, camera);
+}
 
+
+////////////////////////////////
 /* INITIALIZE ANIMATION CYCLE */
+////////////////////////////////
+function init() {
+    'use strict';
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
+    createScene();
+    createCameras();
+
+    window.addEventListener("resize", onResize);
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+}
+
+/////////////////////
 /* ANIMATION CYCLE */
+/////////////////////
+function animate(){
+    'use strict';
+    render();
 
+    requestAnimationFrame(animate);
+    if(carrinhoOut){
+        if (conjunto_carrinho.position.z < 58) { // carrinho não passa dos limites
+            var translationVector = new THREE.Vector3(0, 0, 0.5);
+            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), conjunto_carrinho.rotation.y);
+            conjunto_carrinho.position.add(translationVector);
+        }
+    }
+
+    if (carrinhoIn){
+        if (conjunto_carrinho.position.z > 10) { 
+            var translationVector = new THREE.Vector3(0, 0, -0.5);
+            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), conjunto_carrinho.rotation.y);
+            conjunto_carrinho.position.add(translationVector);
+        }
+    }
+    if (cabineDireita){
+        topo_grua.rotation.y += 0.1
+    }
+    if (cabineEsquerda) {
+        topo_grua.rotation.y -= 0.1
+    }
+    if (garraDesce) {
+        var garraPosicaoRelativa = new THREE.Vector3();
+        garra.getWorldPosition(garraPosicaoRelativa);
+        base_grua.worldToLocal(garraPosicaoRelativa);
+        if(garraPosicaoRelativa.y > 5) { 
+            var translationVector = new THREE.Vector3(0, -0.5, 0);
+            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
+            garra.position.add(translationVector);
+            cable.scale.y += 0.05;
+            translationVector = new THREE.Vector3(0, -0.25, 0);
+            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), cable.rotation.y);
+            cable.position.add(translationVector);
+        }
+    }
+    if (garraSobe) {
+        var garraPosicaoRelativa = new THREE.Vector3();
+        garra.getWorldPosition(garraPosicaoRelativa);
+        base_grua.worldToLocal(garraPosicaoRelativa);
+        if (garraPosicaoRelativa.y < 75) { 
+            var translationVector = new THREE.Vector3(0, 0.5, 0);
+            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
+            garra.position.add(translationVector);
+            cable.scale.y -= 0.05; 
+            translationVector = new THREE.Vector3(0, 0.25, 0);
+            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), cable.rotation.y);
+            cable.position.add(translationVector);
+        }
+    }
+    checkCollisions();
+    renderer.render(scene, camera);
+}
+
+////////////////////////////
 /* RESIZE WINDOW CALLBACK */
-
+////////////////////////////
 function onResize() {
     'use strict';
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -280,32 +510,9 @@ function onResize() {
 
 }
 
+///////////////////////
 /* KEY DOWN CALLBACK */
-// TODO: verificar posição x e y para ver se é a carga em que estamos em cima
-function checkColisao() {
-    var colisao = false;
-    var limiteCarga = 0;
-
-    var garraPosicaoRelativa = new THREE.Vector3();
-    garra.getWorldPosition(garraPosicaoRelativa);
-    base_grua.worldToLocal(garraPosicaoRelativa);
-    var limiteGarra = garraPosicaoRelativa.y - (garra.scale.y / 2) - 3.5; //posição relativa à base,- a posição y da base(0.5), - a alturra dos dedos (3), - espaço do centro da garra ao seu limite
-    console.log("Posição relativa da garra:", garraPosicaoRelativa);
-    console.log("limiteGarra: " + limiteGarra + " limiteCarga: " );
-    for (var i = 0; i < cargas.length; i++) {
-        limiteCarga = cargas[i].position.y + (cargas[i].scale.y / 2);
-        console.log(limiteCarga);
-        if (limiteGarra <= limiteCarga) {
-            console.log("Colisao");
-            colisao = true;
-            break;
-        }
-    }
-    return colisao;
-}
-
-/* KEYDOWN */
-
+///////////////////////
 function onKeyDown(event) {
     switch (event.keyCode) {
 
@@ -318,31 +525,23 @@ function onKeyDown(event) {
             break;
 
         case 65: //A
-        case 97:obj.add(mesh) //a
-            topo_grua.rotation.y -= 0.1
+        case 97: //a
+            cabineEsquerda = true;
             break;
 
         case 81: //Q
         case 113: //q
-            topo_grua.rotation.y += 0.1
+            cabineDireita = true;
             break;
 
         case 87: //w
         case 119: //W
-            if (conjunto_carrinho.position.z >=58) { 
-                break; }
-            var translationVector = new THREE.Vector3(0, 0, 0.5);
-            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), conjunto_carrinho.rotation.y);
-            conjunto_carrinho.position.add(translationVector);
+            carrinhoOut = true;
             break;
 
         case 83: //s
         case 115: //S
-            if (conjunto_carrinho.position.z <= 10) { 
-                break; }
-            var translationVector = new THREE.Vector3(0, 0, -0.5);
-            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), conjunto_carrinho.rotation.y);
-            conjunto_carrinho.position.add(translationVector);
+            carrinhoIn = true;
             break;
 
         case 49: // Tecla '1' - Câmera frontal
@@ -371,60 +570,53 @@ function onKeyDown(event) {
             break;
         case 69: //E
         case 101: //e
-            if(garra.position.y <= -50) { 
-                checkColisao();
-            }
-            if (garra.position.y <= -60) { 
-                break; }
-            var translationVector = new THREE.Vector3(0, -0.5, 0);
-            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
-            garra.position.add(translationVector);
-            cable.scale.y += 0.05;
-            translationVector = new THREE.Vector3(0, -0.25, 0);
-            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), cable.rotation.y);
-            cable.position.add(translationVector);
+            garraDesce = true;
             break;
 
         case 68: //D
         case 100: //d
-            console.log(garra.position.y);
-            if (garra.position.y >= 10) { 
-                break; }
-            var translationVector = new THREE.Vector3(0, 0.5, 0);
-            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
-            garra.position.add(translationVector);
-            cable.scale.y -= 0.05; 
-            translationVector = new THREE.Vector3(0, 0.25, 0);
-            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), cable.rotation.y);
-            cable.position.add(translationVector);
-
+            garraSobe = true;
             break;
     }
 }
 
-function render() {
+///////////////////////
+/* KEY UP CALLBACK */
+///////////////////////
+function onKeyUp(e){
     'use strict';
-    renderer.render(scene, camera);
-}
+    switch (e.keyCode) {
 
-function animate(){
-    'use strict';
-    render();
+        case 65: //A
+        case 97: //a
+            cabineEsquerda = false;
+            break;
 
-    requestAnimationFrame(animate);
-}
+        case 81: //Q
+        case 113: //q
+            cabineDireita = false;
+            break;
 
-function init() {
-    'use strict';
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+        case 87: //w
+        case 119: //W
+            carrinhoOut = false;
+            break;
 
-    createScene();
-    createCameras();
+        case 83: //s
+        case 115: //S
+            carrinhoIn = false;
+            break;
+        case 69: //E
+        case 101: //e
+            garraDesce = false;
+            break;
 
-    window.addEventListener("resize", onResize);
-    window.addEventListener("keydown", onKeyDown);
+        case 68: //D
+        case 100: //d
+            garraSobe = false;
+            break;
+    }
+
 }
 
 init();
