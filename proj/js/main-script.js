@@ -4,7 +4,7 @@ var camera, scene, renderer;
 
 var geometry, material, mesh;
 
-var garra, cable_garra, cable, conjunto_carrinho, topo_grua, topo, base_grua;
+var garra, cable_garra, cable, conjunto_carrinho, topo_grua, base_grua;
 
 var contentor;
 var cargas;
@@ -39,6 +39,7 @@ function createGarra() {
     // Posicionar a câmera móvel no gancho da grua (supondo que o gancho está em (0, 0, 0))
     cameraMovelPerspectiva.position.set(0, -2.5 , 0); 
     cameraMovelPerspectiva.lookAt(0,cameraMovelPerspectiva.position.y - 1,0); // Apontar para baixo
+    garra.position.set(0, -20, 0);
     garra.add(cameraMovelPerspectiva);
 
     scene.add(garra);
@@ -46,15 +47,13 @@ function createGarra() {
 
 function createConjuntoCarrinho() {
     cable = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 10, 32), material);
-    cable.position.set(0, 7, 10);
-    cable_garra = new THREE.Object3D();
-    cable_garra.add(garra);
-    cable_garra.add(cable);
+    cable.position.set(0, -13, 10);
     var carrinho = new THREE.Mesh(new THREE.BoxGeometry(15, 5, 20), material);
-    carrinho.position.set(0, 15, 10);
+    carrinho.position.set(0, -5, 10);
     conjunto_carrinho = new THREE.Object3D();
     conjunto_carrinho.add(carrinho);
-    conjunto_carrinho.add(cable_garra);
+    conjunto_carrinho.add(cable);
+    conjunto_carrinho.add(garra);
     conjunto_carrinho.position.z = 10;
 }
 
@@ -74,6 +73,19 @@ function createTetrahedron(obj, radius){
     mesh.position.set(0, 0, 0);
     obj.add(mesh)
     
+}
+
+function createTirant(obj, radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, rotation, x, y, z){
+
+    // Create geometry for the cylinder
+    var material1 = new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true });
+    geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded);
+
+    // Create the cylinder mesh
+    var tirant = new THREE.Mesh(geometry, material1);
+    tirant.rotateOnAxis(new THREE.Vector3(1, 0, 0), rotation);
+    tirant.position.set(x, y, z);
+    obj.add(tirant);
 }
 
 function createTopoGrua() {
@@ -96,27 +108,11 @@ function createTopoGrua() {
     topo_grua.add(cabinete);
 
     createTetrahedron(topo_grua, 20);
-    var vertices_tirant1 = [
-        new THREE.Vector3(0, 40, -10),
-        new THREE.Vector3(0, 0, 80),
-    ];
-    geometry = new THREE.BufferGeometry().setFromPoints(vertices_tirant1);
-    var tirant1 = new THREE.Line(geometry, material);
-    topo_grua.add(tirant1);
-    var vertices_tirant2 = [
-        new THREE.Vector3(0, 40, -10),
-        new THREE.Vector3(0, 0, -40),
-    ];
-    geometry = new THREE.BufferGeometry().setFromPoints(vertices_tirant2);
-    var tirant2 = new THREE.Line(geometry, material);
-    topo_grua.add(tirant2);
-    topo_grua.add(tirant1);
-    topo_grua.position.set(0, 20, 0);
-    topo = new THREE.Object3D();
-    topo.add(topo_grua);
-    topo.add(conjunto_carrinho);
-    topo.position.set(0, 65, 0);
-    scene.add(topo);
+    createTirant(topo_grua, 0.5, 0.5, 56, 32, 32, false, -Math.PI/2.9, 0, 23, 17);
+    createTirant(topo_grua, 0.5, 0.5, 38, 32, 32, false, Math.PI/6, 0, 20, -19);
+    topo_grua.add(conjunto_carrinho)
+    topo_grua.position.set(0, 85, 0);
+    scene.add(topo_grua);
 }
 
 function createBaseGrua() {
@@ -188,7 +184,7 @@ function createContentorCargas() {
 }
 
 function createChao() {
-    var chao = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshBasicMaterial({ color: 0xff1299 }));  
+    var chao = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshBasicMaterial({ color: 0xff1299, wireframe: true}));  
     chao.rotation.set(-Math.PI / 2, 0, 0); // Bottom
     chao.position.set(37.5, 0, -30);
     scene.add(chao);
@@ -237,9 +233,9 @@ function createCameras() {
     scene.add(cameraTopo);
     // TODO: Mudar para (170, 170, 170) (mudei para ajudar a ver a colisão)
     cameraFixaOrtogonal = new THREE.OrthographicCamera(-10, 10, 10, -10, 1, 1000); // ? Não entendi os valores
-    cameraFixaOrtogonal.position.x = 20;
-    cameraFixaOrtogonal.position.y = 10;
-    cameraFixaOrtogonal.position.z = -30;    
+    cameraFixaOrtogonal.position.x = 170;
+    cameraFixaOrtogonal.position.y = 170;
+    cameraFixaOrtogonal.position.z = 170;    
     cameraFixaOrtogonal.lookAt(scene.position);
     scene.add(cameraFixaOrtogonal);
 
@@ -322,13 +318,13 @@ function onKeyDown(event) {
             break;
 
         case 65: //A
-        case 97: //a
-            topo.rotation.y -= 0.1
+        case 97:obj.add(mesh) //a
+            topo_grua.rotation.y -= 0.1
             break;
 
         case 81: //Q
         case 113: //q
-            topo.rotation.y += 0.1
+            topo_grua.rotation.y += 0.1
             break;
 
         case 87: //w
@@ -372,6 +368,7 @@ function onKeyDown(event) {
         case 54: // Tecla '6' - Câmera móvel perspectiva
             renderer.render(scene, cameraMovelPerspectiva);
             camera = cameraMovelPerspectiva;
+            break;
         case 69: //E
         case 101: //e
             if(garra.position.y <= -50) { 
