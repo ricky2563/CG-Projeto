@@ -12,7 +12,7 @@ var camera, scene, renderer;
 
 var geometry, material, mesh;
 
-var garra, cable_garra, cable, conjunto_carrinho, topo_grua, base_grua;
+var garra, cable_garra, cable, conjunto_carrinho, topo_grua, base_grua, finger_1, finger_2, finger_3, finger_4;
 
 var contentor;
 var cargas;
@@ -21,19 +21,29 @@ var cameraFrontal, cameraLateral, cameraTopo, cameraFixaOrtogonal, cameraFixaPer
 
 var boundingBoxGarra, boundingBoxes;
 
-var cabineDireita, cabineEsquerda, carrinhoIn, carrinhoOut, garraDesce, garraSobe = false;
+var cabineDireita, cabineEsquerda, carrinhoIn, carrinhoOut, garraAbre = false, garraFecha, garraDesce, garraSobe = false;
 
-function add_finger(obj, x, y, z) {
-    var cub, t, g;
+function add_finger(obj, x, y, z, finger) {
+    var cub, t;
     cub = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
     t = new THREE.Mesh(new THREE.TetrahedronGeometry(1), material);
     t.position.set(0, -1, 0);
     t.rotateX(Math.PI/2);
-    g = new THREE.Object3D();
-    g.add(cub);
-    g.add(t);
-    g.position.set(x, y, z);
-    obj.add(g);
+    finger = new THREE.Object3D();
+    finger.add(cub);
+    finger.add(t);
+    finger.position.set(x, y, z);
+    obj.add(finger);
+
+    if (finger_1 === undefined) {
+        finger_1 = finger;
+    } else if (finger_2 === undefined) {
+        finger_2 = finger;
+    } else if (finger_3 === undefined) {
+        finger_3 = finger;
+    } else if (finger_4 === undefined) {
+        finger_4 = finger;
+    }
 }
 
 function createGarra() {
@@ -43,10 +53,10 @@ function createGarra() {
     big_cube.position.set(0,0,10);
     garra = new THREE.Object3D();
     garra.add(big_cube);
-    add_finger(garra, 2, -3, 12);
-    add_finger(garra, -2, -3, 12);
-    add_finger(garra, 2, -3, 8);
-    add_finger(garra, -2, -3, 8);
+    add_finger(garra, 2, -3, 12, finger_1);
+    add_finger(garra, -2, -3, 12, finger_2);
+    add_finger(garra, 2, -3, 8, finger_3);
+    add_finger(garra, -2, -3, 8, finger_4);
     cameraMovelPerspectiva = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
     // Posicionar a câmera móvel no gancho da grua (supondo que o gancho está em (0, 0, 0))
     cameraMovelPerspectiva.position.set(0, -2.5 , 0); 
@@ -246,9 +256,9 @@ function createCameras() {
     scene.add(cameraFrontal);
 
     cameraLateral = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
-    cameraLateral.position.x = 170;
-    cameraLateral.position.y = 100;
-    cameraLateral.position.z = 0;
+    cameraLateral.position.x = 80;
+    cameraLateral.position.y = 80;
+    cameraLateral.position.z = 100;
     cameraLateral.lookAt(scene.position);
     scene.add(cameraLateral);
 
@@ -492,6 +502,44 @@ function animate(){
             cable.position.add(translationVector);
         }
     }
+
+    if (garraAbre) {
+        moveFinger(finger_1, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1); // Move finger_3 de sua posição atual para uma nova posição
+        moveFinger(finger_2, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1); // Move finger_4 de sua posição atual para uma nova posição
+        moveFinger(finger_3, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1); // Move finger_1 de sua posição atual para uma nova posição
+        moveFinger(finger_4, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1); // Move finger_2 de sua posição atual para uma nova posição
+    } 
+    
+    if (garraFecha) {
+        moveFinger(finger_1, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1); // Move finger_2 de sua posição atual para uma nova posição
+        moveFinger(finger_2, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1); // Move finger_1 de sua posição atual para uma nova posição
+        moveFinger(finger_3, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1); // Move finger_4 de sua posição atual para uma nova posição
+        moveFinger(finger_4, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1); // Move finger_3 de sua posição atual para uma nova posição
+    }   
+    
+    // Função para mover um dedo da garra para uma nova posição
+    function moveFinger(finger, currentPosition, targetPosition, speed) {
+        var direction = targetPosition.clone().sub(currentPosition).normalize();
+    
+        // Calcula o ângulo entre a posição atual e a posição de destino
+        var angle = currentPosition.angleTo(targetPosition);
+        
+        // Calcula o vetor de rotação em torno do eixo Z
+        var axis = new THREE.Vector3(0, 0, 1);
+        
+        // Rotaciona o vetor de direção em torno do eixo Z para simular um movimento de rotação
+        direction.applyAxisAngle(axis, angle * speed);
+        // Calcula o deslocamento baseado na velocidade
+        var displacement = direction.clone().multiplyScalar(speed);
+        finger.children[1].position.add(displacement);
+
+        var quaternion = new THREE.Quaternion();
+        quaternion.setFromUnitVectors(currentPosition.normalize(), targetPosition.normalize());
+    
+        // Aplica a rotação
+        finger.children[1].applyQuaternion(quaternion);
+    
+    }
     checkCollisions();
     renderer.render(scene, camera);
 }
@@ -577,6 +625,16 @@ function onKeyDown(event) {
         case 100: //d
             garraSobe = true;
             break;
+
+        case 82: //R
+        case 114: //r
+            garraAbre = true;
+            break;
+
+        case 70: //F
+        case 102: //f
+            garraFecha = true;
+            break;
     }
 }
 
@@ -615,6 +673,17 @@ function onKeyUp(e){
         case 100: //d
             garraSobe = false;
             break;
+        
+        case 82: //R
+        case 114: //r
+            garraAbre = false;
+            break;
+
+        case 70: //F
+        case 102: //f
+            garraFecha = false;
+            break;
+        
     }
 
 }
