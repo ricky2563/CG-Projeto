@@ -23,15 +23,32 @@ var boundingBoxGarra, boundingBoxes;
 
 var cabineDireita, cabineEsquerda, carrinhoIn, carrinhoOut, garraAbre = false, garraFecha, garraDesce, garraSobe = false;
 
+var activeKeys = [];
+
+function createTetrahedron(obj, vertices, x, y, z){
+
+    var indices = [ 0,  1,  2,   0,  2,  3,    0,  3,  1,    1,  3,  2];
+    geometry = new THREE.BufferGeometry();
+    geometry.setFromPoints(vertices);
+    geometry.setIndex(indices);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh)
+    
+}
+
 function add_finger(obj, x, y, z, finger) {
-    var cub, t;
+    var cub;
     cub = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
-    t = new THREE.Mesh(new THREE.TetrahedronGeometry(1), material);
-    t.position.set(0, -1, 0);
-    t.rotateX(Math.PI/2);
+    var vertices = [
+        new THREE.Vector3(0, -1, 0),
+        new THREE.Vector3(0.5, 0, 0),
+        new THREE.Vector3(0, 0, 0.5),
+        new THREE.Vector3(-0.5, 0, -0.5)
+    ];
     finger = new THREE.Object3D();
+    createTetrahedron(finger, vertices, 0, -0.5, 0);
     finger.add(cub);
-    finger.add(t);
     finger.position.set(x, y, z);
     obj.add(finger);
 
@@ -82,24 +99,6 @@ function createConjuntoCarrinho() {
     conjunto_carrinho.position.z = 10;
 }
 
-
-function createTetrahedron(obj, radius){
-    var vertices = [
-        new THREE.Vector3(0, 40, -10),
-        new THREE.Vector3(-10, 0, -10),
-        new THREE.Vector3(10, 0, -10),
-        new THREE.Vector3(0, 0, 10)
-    ];
-    var indices = [ 0,  1,  2,   0,  2,  3,    0,  3,  1,    1,  3,  2];
-    geometry = new THREE.BufferGeometry();
-    geometry.setFromPoints(vertices);
-    geometry.setIndex(indices);
-    mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(0, 0, 0);
-    obj.add(mesh)
-    
-}
-
 function createTirant(obj, radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, rotation, x, y, z){
 
     // Create geometry for the cylinder
@@ -131,8 +130,13 @@ function createTopoGrua() {
     topo_grua.add(contra_lança);
     topo_grua.add(contra_peso);
     topo_grua.add(cabinete);
-
-    createTetrahedron(topo_grua, 20);
+    var vertices = [
+        new THREE.Vector3(0, 40, -10),
+        new THREE.Vector3(-10, 0, -10),
+        new THREE.Vector3(10, 0, -10),
+        new THREE.Vector3(0, 0, 10)
+    ];
+    createTetrahedron(topo_grua, vertices, 0, 0, 0);
     createTirant(topo_grua, 0.5, 0.5, 56, 32, 32, false, -Math.PI/2.9, 0, 23, 17);
     createTirant(topo_grua, 0.5, 0.5, 38, 32, 32, false, Math.PI/6, 0, 20, -19);
     topo_grua.add(conjunto_carrinho)
@@ -250,16 +254,16 @@ function createCameras() {
     'use strict';
     cameraFrontal = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 500);
     cameraFrontal.position.x = 0;
-    cameraFrontal.position.y = 100;
-    cameraFrontal.position.z = 170;
-    cameraFrontal.lookAt(scene.position);
+    cameraFrontal.position.y = 50;
+    cameraFrontal.position.z = 80;
+    cameraFrontal.lookAt(new THREE.Vector3(0, 50, 0));
     scene.add(cameraFrontal);
 
     cameraLateral = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
     cameraLateral.position.x = 80;
-    cameraLateral.position.y = 80;
-    cameraLateral.position.z = 100;
-    cameraLateral.lookAt(scene.position);
+    cameraLateral.position.y = 50;
+    cameraLateral.position.z = 0;
+    cameraLateral.lookAt(new THREE.Vector3(0, 50, 0));
     scene.add(cameraLateral);
 
     cameraTopo = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
@@ -541,7 +545,10 @@ function animate(){
     
     }
     checkCollisions();
+
+    updateHUDKeysText(activeKeys);
     renderer.render(scene, camera);
+    renderer.autoClear = false;
 }
 
 ////////////////////////////
@@ -574,21 +581,33 @@ function onKeyDown(event) {
 
         case 65: //A
         case 97: //a
+            if (!activeKeys.includes('A')){
+                activeKeys.push('A');
+            }
             cabineEsquerda = true;
             break;
 
         case 81: //Q
         case 113: //q
+            if (!activeKeys.includes('Q')){
+                activeKeys.push('Q');
+            }
             cabineDireita = true;
             break;
 
         case 87: //w
         case 119: //W
+            if (!activeKeys.includes('W')){
+                activeKeys.push('W');
+            }
             carrinhoOut = true;
             break;
 
         case 83: //s
         case 115: //S
+            if (!activeKeys.includes('S')){
+                activeKeys.push('S');
+            }
             carrinhoIn = true;
             break;
 
@@ -618,21 +637,33 @@ function onKeyDown(event) {
             break;
         case 69: //E
         case 101: //e
+            if (!activeKeys.includes('E')){
+                activeKeys.push('E');
+            }
             garraDesce = true;
             break;
 
         case 68: //D
         case 100: //d
+            if (!activeKeys.includes('D')){
+                activeKeys.push('D');
+            }
             garraSobe = true;
             break;
 
         case 82: //R
         case 114: //r
+            if (!activeKeys.includes('R')){
+                activeKeys.push('R');
+            }
             garraAbre = true;
             break;
 
         case 70: //F
         case 102: //f
+            if (!activeKeys.includes('F')){
+                activeKeys.push('F');
+            }
             garraFecha = true;
             break;
     }
@@ -647,45 +678,85 @@ function onKeyUp(e){
 
         case 65: //A
         case 97: //a
+            activeKeys.splice(activeKeys.indexOf('A'), 1);
             cabineEsquerda = false;
             break;
 
         case 81: //Q
         case 113: //q
+            activeKeys.splice(activeKeys.indexOf('Q'), 1);
             cabineDireita = false;
             break;
 
         case 87: //w
         case 119: //W
+            activeKeys.splice(activeKeys.indexOf('W'), 1);
             carrinhoOut = false;
             break;
 
         case 83: //s
         case 115: //S
+            activeKeys.splice(activeKeys.indexOf('S'), 1);
             carrinhoIn = false;
             break;
+
         case 69: //E
         case 101: //e
+            activeKeys.splice(activeKeys.indexOf('E'), 1);
             garraDesce = false;
             break;
 
         case 68: //D
         case 100: //d
+            activeKeys.splice(activeKeys.indexOf('D'), 1);
             garraSobe = false;
             break;
         
         case 82: //R
         case 114: //r
+            activeKeys.splice(activeKeys.indexOf('R'), 1);
             garraAbre = false;
             break;
 
         case 70: //F
         case 102: //f
+            activeKeys.splice(activeKeys.indexOf('F'), 1);
             garraFecha = false;
             break;
         
     }
 
+}
+
+var hudCamera = new THREE.OrthographicCamera(-window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, -window.innerHeight / 2, 1, 1000);
+
+// Elementos do HUD
+var hudElements = [];
+
+// Função para adicionar elementos ao HUD
+function addHUDElement(element) {
+    hudElements.push(element);
+    updateHUD();
+}
+
+// Função para atualizar o HUD
+function updateHUD() {
+    hudElements.forEach(function(element, index) {
+        element.style.position = 'absolute';
+        element.style.top = 20 + index * 30 + 'px'; // Espaçamento vertical entre elementos
+        element.style.left = '20px'; // Posição horizontal fixa
+        document.body.appendChild(element);
+    });
+}
+
+// Exemplo de elemento do HUD para teclas ativas
+var hudKeysText = document.createElement('div');
+hudKeysText.textContent = 'Teclas ativas: Nenhuma';
+addHUDElement(hudKeysText);
+
+// Função para atualizar o texto do HUD com as teclas ativas
+function updateHUDKeysText(activeKeys) {
+    hudKeysText.textContent = 'Teclas ativas: ' + activeKeys.join(', ');
 }
 
 init();
