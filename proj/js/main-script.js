@@ -339,16 +339,12 @@ function checkCollisions(){
             
             garra.add(cargas[i]);
             var cargaPosicaoRelativa = new THREE.Vector3();
-            cargas[i].getWorldPosition(cargaPosicaoRelativa);
-            garra.worldToLocal(cargaPosicaoRelativa);
-            var localPosition = new THREE.Vector3(cargas[i].position.x, cargas[i].position.y, cargas[i].position.z); // Local position relative to obj
-
+            garra.getWorldPosition(cargaPosicaoRelativa);
             // Convert local position to world position
-            var worldPosition = garra.worldToLocal(localPosition);
+            var worldPosition = garra.worldToLocal(cargaPosicaoRelativa);
+            worldPosition.y -= 5;
             
             cargas[i].position.set(worldPosition.x, worldPosition.y, worldPosition.z);
-            //cargas[i].position.set(0, -1, 0);
-            console.log("carga " + cargas[i].position.x + " " + cargas[i].position.y + " " + cargas[i].position.z);
             cargaMover=cargas[i];
             cargaMover.userData.movingUp = true;
             break;
@@ -361,8 +357,6 @@ function checkCollisions(){
 ///////////////////////
 function handleCollisions(){
     'use strict';
-    console.log("garra coordenadas" + garra.position.x + " " + garra.position.y + " " + garra.position.z);
-    console.log("carga " + cargaMover.position.x + " " + cargaMover.position.y + " " + cargaMover.position.z);
             
     if (colisao) {
         if (cargaMover.userData.movingUp == true) {
