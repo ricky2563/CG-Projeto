@@ -187,7 +187,7 @@ function createGrua() {
 function createContentorCargas() {
     var carga1 = new THREE.Mesh(new THREE.DodecahedronGeometry(3, 1), new THREE.MeshBasicMaterial( { color: 0x08080, wireframe: true } ));
     carga1.position.set(77, 2, 50);
-    carga1.userData = { movingUp: false, movingForward: false, movingDown: false};
+    carga1.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false};
     scene.add(carga1);
     var carga2 = new THREE.Mesh(new THREE.IcosahedronGeometry(3, 0), new THREE.MeshBasicMaterial( { color: 0x00080, wireframe: true } ));
     carga2.position.set(-77, 2, 30);
@@ -197,7 +197,7 @@ function createContentorCargas() {
     scene.add(carga3);
     var carga4 = new THREE.Mesh(new THREE.TorusGeometry(1, 1, 12, 48), new THREE.MeshBasicMaterial( { color: 0xff70cb, wireframe: true } ));
     carga4.position.set(-47, 2, -34);
-    carga4.userData = { movingUp: false, movingForward: false, movingDown: false};
+    carga4.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false};
     scene.add(carga4);
     
     cargas = [carga1, carga2, carga3, carga4];
@@ -239,7 +239,7 @@ function createContentorCargas() {
     contentor.add(plane3);
     contentor.add(plane4);
     contentor.add(plane5);
-    contentor.position.set(37.5, 5, -30);
+    contentor.position.set(0, 0, 30);
     scene.add(contentor);
 
 }
@@ -358,24 +358,43 @@ function checkCollisions(){
 function handleCollisions(){
     'use strict';
             
-    if (colisao) {
-        if (cargaMover.userData.movingUp == true) {
-            console.log('subir');
-            var garraPosicaoRelativa = new THREE.Vector3();
-            garra.getWorldPosition(garraPosicaoRelativa);
-            base_grua.worldToLocal(garraPosicaoRelativa);
-            
-            var translationVector = new THREE.Vector3(0, 0.5, 0);
-            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
-            garra.position.add(translationVector);
-            cable.scale.y -= 0.35; 
-            translationVector = new THREE.Vector3(0, 0.25, 0);
-            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), cable.rotation.y);
-            cable.position.add(translationVector);
+    if (cargaMover.userData.movingUp == true) {
+        console.log('subir');
+        garraSobe = true;
+        console.log(garra.position.y);
+        if (garra.position.y > -60) {
+            garraSobe = false;
             cargaMover.userData.movingUp = false;
             cargaMover.userData.movingForward = true;
         }
     }
+    if (cargaMover.userData.movingForward == true) {
+        console.log('recuar');
+        console.log(conjunto_carrinho.position.z);
+        carrinhoIn = true;
+        var worldPosition = new THREE.Vector3();
+        garra.getWorldPosition(worldPosition);
+
+        var distanceToOrigin = worldPosition.distanceTo(new THREE.Vector3(0, 0, 0));
+        if (distanceToOrigin < 50) {
+            carrinhoIn = false;
+            cargaMover.userData.movingForward = false;
+            cargaMover.userData.movingLeft = true;
+        }
+    }
+    if (cargaMover.userData.movingLeft == true) {
+        console.log('esquerda');
+        console.log(conjunto_carrinho.position.x);
+        cabineEsquerda = true;
+        var worldPosition = new THREE.Vector3();
+        garra.getWorldPosition(worldPosition);
+        if (topo_grua.rotation.y.toFixed(4) % (0.02*75*Math.PI).toFixed(4) == 0) {
+            cabineEsquerda = false;
+            cargaMover.userData.movingLeft = false;
+            cargaMover.userData.movingDown = true;
+        }
+    }
+}
     
     
     
@@ -402,7 +421,6 @@ function handleCollisions(){
     }
 
     update(); */  
-}
 
 
 
@@ -418,6 +436,9 @@ function update(){
             translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), conjunto_carrinho.rotation.y);
             conjunto_carrinho.position.add(translationVector);
         }
+        if (colisao){
+            carrinhoOut = false;
+        }
     }
 
     if (carrinhoIn){
@@ -426,12 +447,19 @@ function update(){
             translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), conjunto_carrinho.rotation.y);
             conjunto_carrinho.position.add(translationVector);
         }
+        if (colisao){
+            carrinhoIn = false;
+        }
     }
     if (cabineDireita){
-        topo_grua.rotation.y += 0.1
+        topo_grua.rotation.y += 0.02*Math.PI;
     }
     if (cabineEsquerda) {
-        topo_grua.rotation.y -= 0.1
+        topo_grua.rotation.y -= 0.02*Math.PI;
+        console.log(topo_grua.rotation.y);
+        if (colisao){
+            cabineEsquerda = false;
+        }
     }
     if (garraDesce) {
         var garraPosicaoRelativa = new THREE.Vector3();
@@ -459,6 +487,9 @@ function update(){
             translationVector = new THREE.Vector3(0, 0.25, 0);
             translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), cable.rotation.y);
             cable.position.add(translationVector);
+        }
+        if (colisao){
+            garraSobe = false;
         }
     }
 
@@ -518,6 +549,10 @@ function update(){
         }
     }
     checkCollisions();
+    if (colisao){
+        handleCollisions();
+    
+    }
 
 }
 
@@ -526,7 +561,6 @@ function update(){
 /////////////
 function render() {
     'use strict';
-    handleCollisions();
     renderer.render(scene, camera);
 }
 
