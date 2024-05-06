@@ -12,16 +12,17 @@ var camera, scene, renderer;
 
 var geometry, material, mesh;
 
-var garra, cable_garra, cable, conjunto_carrinho, topo_grua, base_grua, finger_1, finger_2, finger_3, finger_4;
+var     garra = new THREE.Object3D(), cable_garra, cable, conjunto_carrinho, topo_grua, base_grua = new THREE.Object3D(), finger_1, finger_2, finger_3, finger_4;
 
-var contentor;
+var contentor = new THREE.Object3D();
 var cargas;
+var cargaMover = new THREE.Object3D;
 
 var cameraFrontal, cameraLateral, cameraTopo, cameraFixaOrtogonal, cameraFixaPerspectiva, cameraMovelPerspectiva;
 
 var boundingBoxGarra, boundingBoxes;
 
-var cabineDireita, cabineEsquerda, carrinhoIn, carrinhoOut, garraAbre, garraFecha, garraDesce, garraSobe = false;
+var cabineDireita = false, cabineEsquerda = false, carrinhoIn = false, carrinhoOut = false, garraAbre, garraFecha = false, garraDesce = false, garraSobe = false, colisao = false;
 
 var activeKeys = [];
 
@@ -65,22 +66,21 @@ function createGarra() {
     var big_cube_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
     materials.push(big_cube_material);
     big_cube = new THREE.Mesh(new THREE.BoxGeometry(5, 5, 5), big_cube_material);
-    big_cube.position.set(0,0,10);
-    garra = new THREE.Object3D();
+    big_cube.position.set(0,0,0);
     garra.add(big_cube);
     finger_1 = new THREE.Object3D();
     finger_2 = new THREE.Object3D();
     finger_3 = new THREE.Object3D();
     finger_4 = new THREE.Object3D();
-    add_finger(garra, 2, -3, 12, finger_1);
-    add_finger(garra, -2, -3, 12, finger_2);
-    add_finger(garra, 2, -3, 8, finger_3);
-    add_finger(garra, -2, -3, 8, finger_4);
+    add_finger(garra, 2, -3, 2, finger_1);
+    add_finger(garra, -2, -3, 2, finger_2);
+    add_finger(garra, 2, -3, -2, finger_3);
+    add_finger(garra, -2, -3, -2, finger_4);
     cameraMovelPerspectiva = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
     // Posicionar a câmera móvel no gancho da grua (supondo que o gancho está em (0, 0, 0))
     cameraMovelPerspectiva.position.set(0, -2.5 , 0); 
     cameraMovelPerspectiva.lookAt(0,cameraMovelPerspectiva.position.y - 1,0); // Apontar para baixo
-    garra.position.set(0, -20, 0);
+    garra.position.set(0, -20, 10);
     garra.add(cameraMovelPerspectiva);
     const box = new THREE.Box3();
 
@@ -171,7 +171,6 @@ function createBaseGrua() {
     base.position.set(0, 5, 0);
     var suporte = new THREE.Mesh(new THREE.BoxGeometry(20, 65, 20), suporte_material);
     suporte.position.set(0, 40, 0);
-    base_grua = new THREE.Object3D();
     base_grua.add(base);
     base_grua.add(suporte);
     scene.add(base_grua);
@@ -188,6 +187,7 @@ function createGrua() {
 function createContentorCargas() {
     var carga1 = new THREE.Mesh(new THREE.DodecahedronGeometry(3, 1), new THREE.MeshBasicMaterial( { color: 0x08080, wireframe: true } ));
     carga1.position.set(77, 2, 50);
+    carga1.userData = { movingUp: false, movingForward: false, movingDown: false};
     scene.add(carga1);
     var carga2 = new THREE.Mesh(new THREE.IcosahedronGeometry(3, 0), new THREE.MeshBasicMaterial( { color: 0x00080, wireframe: true } ));
     carga2.position.set(-77, 2, 30);
@@ -197,6 +197,7 @@ function createContentorCargas() {
     scene.add(carga3);
     var carga4 = new THREE.Mesh(new THREE.TorusGeometry(1, 1, 12, 48), new THREE.MeshBasicMaterial( { color: 0xff70cb, wireframe: true } ));
     carga4.position.set(-47, 2, -34);
+    carga4.userData = { movingUp: false, movingForward: false, movingDown: false};
     scene.add(carga4);
     
     cargas = [carga1, carga2, carga3, carga4];
@@ -233,12 +234,12 @@ function createContentorCargas() {
     plane5.position.set(37.5, 5, -45);
     //scene.add(plane5);
 
-    contentor = new THREE.Object3D();
     contentor.add(plane1);
     contentor.add(plane2);
     contentor.add(plane3);
     contentor.add(plane4);
     contentor.add(plane5);
+    contentor.position.set(37.5, 5, -30);
     scene.add(contentor);
 
 }
@@ -326,14 +327,30 @@ function createCameras() {
 //////////////////////
 function checkCollisions(){
     'use strict';
-
+    if (colisao){return;}
     boundingBoxGarra.setFromObject(garra);
     for (var i = 0; i < cargas.length; i++) {
         boundingBoxes[i].setFromObject(cargas[i]);
 
         if (boundingBoxGarra.intersectsBox(boundingBoxes[i])) {
             console.log("Colisão detectada!");
-            handleCollisions(cargas[i]);
+            colisao = true;
+            
+            
+            garra.add(cargas[i]);
+            var cargaPosicaoRelativa = new THREE.Vector3();
+            cargas[i].getWorldPosition(cargaPosicaoRelativa);
+            garra.worldToLocal(cargaPosicaoRelativa);
+            var localPosition = new THREE.Vector3(cargas[i].position.x, cargas[i].position.y, cargas[i].position.z); // Local position relative to obj
+
+            // Convert local position to world position
+            var worldPosition = garra.worldToLocal(localPosition);
+            
+            cargas[i].position.set(worldPosition.x, worldPosition.y, worldPosition.z);
+            //cargas[i].position.set(0, -1, 0);
+            console.log("carga " + cargas[i].position.x + " " + cargas[i].position.y + " " + cargas[i].position.z);
+            cargaMover=cargas[i];
+            cargaMover.userData.movingUp = true;
             break;
         }
     }
@@ -342,97 +359,57 @@ function checkCollisions(){
 ///////////////////////
 /* HANDLE COLLISIONS */
 ///////////////////////
-function handleCollisions(carga){
+function handleCollisions(){
     'use strict';
+    console.log("garra coordenadas" + garra.position.x + " " + garra.position.y + " " + garra.position.z);
+    console.log("carga " + cargaMover.position.x + " " + cargaMover.position.y + " " + cargaMover.position.z);
+            
+    if (colisao) {
+        if (cargaMover.userData.movingUp == true) {
+            console.log('subir');
+            var garraPosicaoRelativa = new THREE.Vector3();
+            garra.getWorldPosition(garraPosicaoRelativa);
+            base_grua.worldToLocal(garraPosicaoRelativa);
+            
+            var translationVector = new THREE.Vector3(0, 0.5, 0);
+            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
+            garra.position.add(translationVector);
+            cable.scale.y -= 0.35; 
+            translationVector = new THREE.Vector3(0, 0.25, 0);
+            translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), cable.rotation.y);
+            cable.position.add(translationVector);
+            cargaMover.userData.movingUp = false;
+            cargaMover.userData.movingForward = true;
+        }
+    }
+    
+    
+    
+    
+    //garra.add(cargaMover);
+    /*var initialPosition = cargaMover.position.clone();
+    var targetPosition = contentor.position.clone();
+    
 
-    // Calcula o vetor de direção entre a carga e o contentor
-    var direction = new THREE.Vector3().subVectors(contentor.position, carga.position).normalize();
-
-    // Configura o tempo de duração da animação
-    var duration = 5000; // Duração da animação em milissegundos
-    var startTime = Date.now();
-    console.log("transportarCarga");
-    garra.add(carga);
-    var translationVector = new THREE.Vector3(0, 0.5, 0);
-    translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), garra.rotation.y);
-    garra.position.add(translationVector);
-    cable.scale.y -= 1.05; 
-    translationVector = new THREE.Vector3(0, 0.25, 0);
-    translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), cable.rotation.y);
-    cable.position.add(translationVector);
-
-    // Função de animação que será chamada a cada quadro
-    function animate() {
+    function update() {
         var now = Date.now();
         var elapsedTime = now - startTime;
         if (elapsedTime < duration) {
-            // Calcula a posição intermediária usando .lerp()
             var t = elapsedTime / duration;
-            carga.position.lerpVectors(carga.position, contentor.position, t);
-            // Requer outro quadro para continuar a animação
+            cargaMover.position.lerpVectors(initialPosition, targetPosition, t);
             requestAnimationFrame(animate);
         } else {
-            // Animação concluída, faça algo se necessário
-            garra.remove(carga);
-            console.log("Transporte concluído!");
+            // Quando a animação estiver concluída
+            console.log("contentor coordenadas" + contentor.position.x + " " + contentor.position.y + " " + contentor.position.z + " " + contentor.position.z);
+            console.log("carga handle" + cargas[3].position.x + " " + cargas[3].position.y + " " + cargas[3].position.z);
+            cargaMover.position.copy(targetPosition);
+            if (handleCollisions) handleCollisions(cargaMover);
         }
     }
 
-    // Inicia a animação
-    animate();
-
-    /*function transportarCarga(carga) {
-        // Número de translações desejadas
-        var numeroDeTranslacoes = 2;
-        // Contador de translações realizadas
-        var translacoesRealizadas = 0;
-    
-        // Configura o tempo de duração da animação de translação
-        var durationTranslacao = 5000; // Duração da animação em milissegundos
-        var startTimeTranslacao = Date.now();
-    
-        console.log("transportarCarga");
-    
-        // Função de animação de translação que será chamada a cada quadro
-        function animateTranslacao() {
-            var now = Date.now();
-            var elapsedTime = now - startTimeTranslacao;
-            if (elapsedTime < durationTranslacao && translacoesRealizadas < numeroDeTranslacoes) {
-                // Calcula a posição intermediária usando .lerp()
-                var t = elapsedTime / durationTranslacao;
-                carga.position.lerpVectors(carga.position, contentor.position, t);
-                // Requer outro quadro para continuar a animação
-                requestAnimationFrame(animateTranslacao);
-            } else {
-                // Translação concluída, faça algo se necessário
-                // Verificar se ainda é necessário girar a grua
-                if (translacoesRealizadas < numeroDeTranslacoes) {
-                    translacoesRealizadas++;
-                    // Realize a translação novamente se ainda houver translações restantes
-                    startTimeTranslacao = Date.now();
-                    requestAnimationFrame(animateTranslacao);
-                } else {
-                    // Iniciar rotação da grua em direção ao contentor
-                    iniciarRotacaoGrua();
-                }
-            }
-        }
-    
-        // Inicia a animação de translação
-        animateTranslacao();
-    }
-    
-    // Função para iniciar a rotação da grua em direção ao contentor
-    function iniciarRotacaoGrua() {
-        // Aqui você pode adicionar a lógica para iniciar a rotação da grua
-        // por exemplo:
-        // var anguloAlvo = ...; // Calcular o ângulo necessário para a grua girar em direção ao contentor
-        // grua.rotation.y = anguloAlvo; // Definir o ângulo da rotação da grua diretamente
-    
-        console.log("Iniciando rotação da grua");
-    }
-*/    
+    update(); */  
 }
+
 
 
 
@@ -555,6 +532,7 @@ function update(){
 /////////////
 function render() {
     'use strict';
+    handleCollisions();
     renderer.render(scene, camera);
 }
 
