@@ -21,7 +21,7 @@ var cameraFrontal, cameraLateral, cameraTopo, cameraFixaOrtogonal, cameraFixaPer
 
 var boundingBoxGarra, boundingBoxes;
 
-var cabineDireita, cabineEsquerda, carrinhoIn, carrinhoOut, garraAbre = false, garraFecha, garraDesce, garraSobe = false;
+var cabineDireita, cabineEsquerda, carrinhoIn, carrinhoOut, garraAbre, garraFecha, garraDesce, garraSobe = false;
 
 var activeKeys = [];
 
@@ -41,26 +41,16 @@ function add_finger(obj, x, y, z, finger) {
     var cub;
     cub = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
     var vertices = [
-        new THREE.Vector3(0, -1, 0),
+        new THREE.Vector3(0, -2, 0),
         new THREE.Vector3(0.5, 0, 0),
         new THREE.Vector3(0, 0, 0.5),
         new THREE.Vector3(-0.5, 0, -0.5)
     ];
-    finger = new THREE.Object3D();
     createTetrahedron(finger, vertices, 0, -0.5, 0);
     finger.add(cub);
     finger.position.set(x, y, z);
     obj.add(finger);
 
-    if (finger_1 === undefined) {
-        finger_1 = finger;
-    } else if (finger_2 === undefined) {
-        finger_2 = finger;
-    } else if (finger_3 === undefined) {
-        finger_3 = finger;
-    } else if (finger_4 === undefined) {
-        finger_4 = finger;
-    }
 }
 
 function createGarra() {
@@ -70,6 +60,10 @@ function createGarra() {
     big_cube.position.set(0,0,10);
     garra = new THREE.Object3D();
     garra.add(big_cube);
+    finger_1 = new THREE.Object3D();
+    finger_2 = new THREE.Object3D();
+    finger_3 = new THREE.Object3D();
+    finger_4 = new THREE.Object3D();
     add_finger(garra, 2, -3, 12, finger_1);
     add_finger(garra, -2, -3, 12, finger_2);
     add_finger(garra, 2, -3, 8, finger_3);
@@ -508,41 +502,67 @@ function animate(){
     }
 
     if (garraAbre) {
-        moveFinger(finger_1, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1); // Move finger_3 de sua posição atual para uma nova posição
-        moveFinger(finger_2, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1); // Move finger_4 de sua posição atual para uma nova posição
-        moveFinger(finger_3, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1); // Move finger_1 de sua posição atual para uma nova posição
-        moveFinger(finger_4, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1); // Move finger_2 de sua posição atual para uma nova posição
+
+        if(finger_1.children[0].position.y < -0.501) {
+            console.log('finger_1:');
+            moveFinger(finger_1, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1); 
+        }
+
+        if(finger_2.children[0].position.y > -0.499) {
+            console.log('finger_2:');
+            moveFinger(finger_2, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1);     
+        }
+
+        if(finger_3.children[0].position.y < -0.501) {
+            console.log('finger_3:');
+            moveFinger(finger_3, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1); 
+        }
+        
+        if(finger_4.children[0].position.y > -0.499) {
+            console.log('finger_4:');
+            moveFinger(finger_4, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1);
+        }
+
     } 
     
     if (garraFecha) {
-        moveFinger(finger_1, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1); // Move finger_2 de sua posição atual para uma nova posição
-        moveFinger(finger_2, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1); // Move finger_1 de sua posição atual para uma nova posição
-        moveFinger(finger_3, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1); // Move finger_4 de sua posição atual para uma nova posição
-        moveFinger(finger_4, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1); // Move finger_3 de sua posição atual para uma nova posição
+        if(finger_1.children[0].position.y > -0.505) {
+            console.log('finger_1:');
+            moveFinger(finger_1, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1); 
+        }
+
+        if(finger_2.children[0].position.y < -0.496) {
+            console.log('finger_2:');
+            moveFinger(finger_2, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1);     
+        }
+
+        if(finger_3.children[0].position.y > -0.505) {
+            console.log('finger_3:');
+            moveFinger(finger_3, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1); 
+        }
+        
+        if(finger_4.children[0].position.y < -0.496) {
+            console.log('finger_4:');
+            moveFinger(finger_4, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1);
+        }
     }   
     
     // Função para mover um dedo da garra para uma nova posição
     function moveFinger(finger, currentPosition, targetPosition, speed) {
-        var direction = targetPosition.clone().sub(currentPosition).normalize();
-    
-        // Calcula o ângulo entre a posição atual e a posição de destino
-        var angle = currentPosition.angleTo(targetPosition);
+        console.log(finger.children[0].position.y);
+        if (finger.children[0].position.z < 58) { 
+            var direction = targetPosition.clone().sub(currentPosition).normalize();
+            var angle = currentPosition.angleTo(targetPosition);
+            var axis = new THREE.Vector3(0, 0, 1);
+            
+            direction.applyAxisAngle(axis, angle * speed);
+            var displacement = direction.clone().multiplyScalar(speed);
+            finger.children[0].position.add(displacement);
+            var quaternion = new THREE.Quaternion();
+            quaternion.setFromUnitVectors(currentPosition.normalize(), targetPosition.normalize());
+            finger.children[0].applyQuaternion(quaternion);
         
-        // Calcula o vetor de rotação em torno do eixo Z
-        var axis = new THREE.Vector3(0, 0, 1);
-        
-        // Rotaciona o vetor de direção em torno do eixo Z para simular um movimento de rotação
-        direction.applyAxisAngle(axis, angle * speed);
-        // Calcula o deslocamento baseado na velocidade
-        var displacement = direction.clone().multiplyScalar(speed);
-        finger.children[1].position.add(displacement);
-
-        var quaternion = new THREE.Quaternion();
-        quaternion.setFromUnitVectors(currentPosition.normalize(), targetPosition.normalize());
-    
-        // Aplica a rotação
-        finger.children[1].applyQuaternion(quaternion);
-    
+        }
     }
     checkCollisions();
 
