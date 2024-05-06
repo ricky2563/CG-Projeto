@@ -504,22 +504,18 @@ function animate(){
     if (garraAbre) {
 
         if(finger_1.children[0].position.y < -0.501) {
-            console.log('finger_1:');
             moveFinger(finger_1, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1); 
         }
 
         if(finger_2.children[0].position.y > -0.499) {
-            console.log('finger_2:');
             moveFinger(finger_2, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1);     
         }
 
         if(finger_3.children[0].position.y < -0.501) {
-            console.log('finger_3:');
             moveFinger(finger_3, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1); 
         }
         
         if(finger_4.children[0].position.y > -0.499) {
-            console.log('finger_4:');
             moveFinger(finger_4, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1);
         }
 
@@ -527,22 +523,18 @@ function animate(){
     
     if (garraFecha) {
         if(finger_1.children[0].position.y > -0.505) {
-            console.log('finger_1:');
             moveFinger(finger_1, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1); 
         }
 
         if(finger_2.children[0].position.y < -0.496) {
-            console.log('finger_2:');
             moveFinger(finger_2, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1);     
         }
 
         if(finger_3.children[0].position.y > -0.505) {
-            console.log('finger_3:');
             moveFinger(finger_3, new THREE.Vector3(-2, -3, 0.2), new THREE.Vector3(-3, -3, 0.2), 0.1); 
         }
         
         if(finger_4.children[0].position.y < -0.496) {
-            console.log('finger_4:');
             moveFinger(finger_4, new THREE.Vector3(2, -3, 0.2), new THREE.Vector3(3, -3, 0.2), 0.1);
         }
     }   
