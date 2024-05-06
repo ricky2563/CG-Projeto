@@ -199,7 +199,7 @@ function createContentorCargas() {
     carga3.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false};
     scene.add(carga3);
     var carga4 = new THREE.Mesh(new THREE.TorusGeometry(1, 1, 12, 48), new THREE.MeshBasicMaterial( { color: 0xff70cb, wireframe: true } ));
-    carga4.position.set(-47, 2, -34);
+    carga4.position.set(0, 2, 54);
     carga4.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false};
     scene.add(carga4);
     
@@ -396,7 +396,7 @@ function handleCollisions(){
         console.log("garra world " +worldPosition.x + ", " + worldPosition.y + ", " + worldPosition.z)
         var distance = worldPosition.distanceTo(contentorPosition);
 
-        if (distance < 59 ) {
+        if (distance < 59 && distance > 57 && worldPosition.x > 0) {
             console.log(distance);
 
             cabineEsquerda = false;
