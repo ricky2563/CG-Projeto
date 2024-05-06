@@ -25,13 +25,15 @@ var cabineDireita, cabineEsquerda, carrinhoIn, carrinhoOut, garraAbre, garraFech
 
 var activeKeys = [];
 
-function createTetrahedron(obj, vertices, x, y, z){
+var materials = [];
+
+function createTetrahedron(obj, vertices, x, y, z, tetrahedron_material){
 
     var indices = [ 0,  1,  2,   0,  2,  3,    0,  3,  1,    1,  3,  2];
     geometry = new THREE.BufferGeometry();
     geometry.setFromPoints(vertices);
     geometry.setIndex(indices);
-    mesh = new THREE.Mesh(geometry, material);
+    mesh = new THREE.Mesh(geometry, tetrahedron_material);
     mesh.position.set(x, y, z);
     obj.add(mesh)
     
@@ -39,14 +41,18 @@ function createTetrahedron(obj, vertices, x, y, z){
 
 function add_finger(obj, x, y, z, finger) {
     var cub;
-    cub = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
+    var finger_cube_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(finger_cube_material);
+    cub = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), finger_cube_material);
     var vertices = [
         new THREE.Vector3(0, -2, 0),
         new THREE.Vector3(0.5, 0, 0),
         new THREE.Vector3(0, 0, 0.5),
         new THREE.Vector3(-0.5, 0, -0.5)
     ];
-    createTetrahedron(finger, vertices, 0, -0.5, 0);
+    var finger_claw_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(finger_claw_material);
+    createTetrahedron(finger, vertices, 0, -0.5, 0, finger_claw_material);
     finger.add(cub);
     finger.position.set(x, y, z);
     obj.add(finger);
@@ -56,7 +62,9 @@ function add_finger(obj, x, y, z, finger) {
 function createGarra() {
     'use strict';
     var big_cube;
-    big_cube = new THREE.Mesh(new THREE.BoxGeometry(5, 5, 5), material);
+    var big_cube_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(big_cube_material);
+    big_cube = new THREE.Mesh(new THREE.BoxGeometry(5, 5, 5), big_cube_material);
     big_cube.position.set(0,0,10);
     garra = new THREE.Object3D();
     garra.add(big_cube);
@@ -82,9 +90,13 @@ function createGarra() {
 }
 
 function createConjuntoCarrinho() {
-    cable = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 10, 32), material);
+    var cable_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(cable_material);
+    var carrinho_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(carrinho_material);
+    cable = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 10, 32), cable_material);
     cable.position.set(0, -13, 10);
-    var carrinho = new THREE.Mesh(new THREE.BoxGeometry(15, 5, 20), material);
+    var carrinho = new THREE.Mesh(new THREE.BoxGeometry(15, 5, 20), carrinho_material);
     carrinho.position.set(0, -5, 10);
     conjunto_carrinho = new THREE.Object3D();
     conjunto_carrinho.add(carrinho);
@@ -96,26 +108,36 @@ function createConjuntoCarrinho() {
 function createTirant(obj, radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, rotation, x, y, z){
 
     // Create geometry for the cylinder
-    var material1 = new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true });
+    var material_tirant = new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true });
     geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded);
 
     // Create the cylinder mesh
-    var tirant = new THREE.Mesh(geometry, material1);
+    var tirant = new THREE.Mesh(geometry, material_tirant);
     tirant.rotateOnAxis(new THREE.Vector3(1, 0, 0), rotation);
     tirant.position.set(x, y, z);
     obj.add(tirant);
 }
 
 function createTopoGrua() {
-    var traçao_do_carrinho = new THREE.Mesh(new THREE.BoxGeometry(20, 5, 90), material);
+    var material_traçao_do_carrinho = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(material_traçao_do_carrinho);
+    var material_lança = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(material_lança);
+    var material_contra_lança = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(material_contra_lança);
+    var material_contra_peso = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(material_contra_peso);
+    var material_cabinete = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(material_cabinete);
+    var traçao_do_carrinho = new THREE.Mesh(new THREE.BoxGeometry(20, 5, 90), material_traçao_do_carrinho);
     traçao_do_carrinho.position.set(0, 0, 35);
-    var lança = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 60), material);
+    var lança = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 60), material_lança);
     lança.position.set(0, 5, 45);
-    var contra_lança = new THREE.Mesh(new THREE.BoxGeometry(20, 5, 40), material);
+    var contra_lança = new THREE.Mesh(new THREE.BoxGeometry(20, 5, 40), material_contra_lança);
     contra_lança.position.set(0, 0, -30);
-    var contra_peso = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 30), material);
+    var contra_peso = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 30), material_contra_peso);
     contra_peso.position.set(0, -8, -30);
-    var cabinete = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 20), material);
+    var cabinete = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 20), material_cabinete);
     cabinete.position.set(0, -8, 0);
 
     topo_grua = new THREE.Object3D();
@@ -130,7 +152,9 @@ function createTopoGrua() {
         new THREE.Vector3(10, 0, -10),
         new THREE.Vector3(0, 0, 10)
     ];
-    createTetrahedron(topo_grua, vertices, 0, 0, 0);
+    var porta_lança_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(porta_lança_material);
+    createTetrahedron(topo_grua, vertices, 0, 0, 0, porta_lança_material);
     createTirant(topo_grua, 0.5, 0.5, 56, 32, 32, false, -Math.PI/2.9, 0, 23, 17);
     createTirant(topo_grua, 0.5, 0.5, 38, 32, 32, false, Math.PI/6, 0, 20, -19);
     topo_grua.add(conjunto_carrinho)
@@ -139,9 +163,13 @@ function createTopoGrua() {
 }
 
 function createBaseGrua() {
-    var base = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 30), material);
+    var base_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(base_material);
+    var suporte_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials.push(suporte_material);
+    var base = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 30), base_material);
     base.position.set(0, 5, 0);
-    var suporte = new THREE.Mesh(new THREE.BoxGeometry(20, 65, 20), material);
+    var suporte = new THREE.Mesh(new THREE.BoxGeometry(20, 65, 20), suporte_material);
     suporte.position.set(0, 40, 0);
     base_grua = new THREE.Object3D();
     base_grua.add(base);
@@ -151,7 +179,6 @@ function createBaseGrua() {
 }
 
 function createGrua() {
-    material = new THREE.MeshBasicMaterial({ color: 0x7d7d7d, wireframe: true });  // NÂO SEI SE PORQUE MAS NÃO ESTÁ A MUDAR
     createGarra();
     createConjuntoCarrinho();
     createTopoGrua();
@@ -414,43 +441,6 @@ function handleCollisions(carga){
 ////////////
 function update(){
     'use strict';
-
-}
-
-/////////////
-/* DISPLAY */
-/////////////
-function render() {
-    'use strict';
-    renderer.render(scene, camera);
-}
-
-
-////////////////////////////////
-/* INITIALIZE ANIMATION CYCLE */
-////////////////////////////////
-function init() {
-    'use strict';
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    createScene();
-    createCameras();
-
-    window.addEventListener("resize", onResize);
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
-}
-
-/////////////////////
-/* ANIMATION CYCLE */
-/////////////////////
-function animate(){
-    'use strict';
-    render();
-
-    requestAnimationFrame(animate);
     if(carrinhoOut){
         if (conjunto_carrinho.position.z < 58) { // carrinho não passa dos limites
             var translationVector = new THREE.Vector3(0, 0, 0.5);
@@ -558,6 +548,44 @@ function animate(){
     }
     checkCollisions();
 
+}
+
+/////////////
+/* DISPLAY */
+/////////////
+function render() {
+    'use strict';
+    renderer.render(scene, camera);
+}
+
+
+////////////////////////////////
+/* INITIALIZE ANIMATION CYCLE */
+////////////////////////////////
+function init() {
+    'use strict';
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    createScene();
+    createCameras();
+
+    window.addEventListener("resize", onResize);
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+}
+
+/////////////////////
+/* ANIMATION CYCLE */
+/////////////////////
+function animate(){
+    'use strict';
+    render();
+
+    requestAnimationFrame(animate);
+    update();
+
     updateHUDKeysText(activeKeys);
     renderer.render(scene, camera);
     renderer.autoClear = false;
@@ -584,10 +612,8 @@ function onKeyDown(event) {
     switch (event.keyCode) {
 
         case 55: // Tecla '7' - Wireframe
-            scene.traverse(function (node) {
-                if (node instanceof THREE.Mesh) {
-                    node.material.wireframe = !node.material.wireframe;
-                }
+            materials.forEach(function (material) {
+                material.wireframe = !material.wireframe;
             });
             break;
 
