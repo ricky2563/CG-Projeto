@@ -188,19 +188,19 @@ function createGrua() {
 function createContentorCargas() {
     var carga1 = new THREE.Mesh(new THREE.DodecahedronGeometry(3, 1), new THREE.MeshBasicMaterial( { color: 0x08080, wireframe: true } ));
     carga1.position.set(77, 2, 50);
-    carga1.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false};
+    carga1.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false, movingBackwards: false, movingRight: false};
     scene.add(carga1);
     var carga2 = new THREE.Mesh(new THREE.IcosahedronGeometry(3, 0), new THREE.MeshBasicMaterial( { color: 0x00080, wireframe: true } ));
     carga2.position.set(-77, 2, 30);
-    carga2.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false};
+    carga2.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false, movingBackwards: false, movingRight: false};
     scene.add(carga2);
     var carga3 = new THREE.Mesh(new THREE.TorusKnotGeometry( 1, 0.4, 100, 2 ), new THREE.MeshBasicMaterial( { color: 0x08000, wireframe: true } ));
     carga3.position.set(57, 2, -44);
-    carga3.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false};
+    carga3.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false, movingBackwards: false, movingRight: false};
     scene.add(carga3);
     var carga4 = new THREE.Mesh(new THREE.TorusGeometry(1, 1, 12, 48), new THREE.MeshBasicMaterial( { color: 0xff70cb, wireframe: true } ));
     carga4.position.set(0, 2, 54);
-    carga4.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false};
+    carga4.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false, movingBackwards: false, movingRight: false};
     scene.add(carga4);
     
     cargas = [carga1, carga2, carga3, carga4];
@@ -214,27 +214,27 @@ function createContentorCargas() {
     // Create planes for each side except the top
     var plane1 = new THREE.Mesh(new THREE.PlaneGeometry(15, 30), color); //laranja
     plane1.rotation.set(-Math.PI / 2, 0, 0); // Bottom
-    plane1.position.set(37.5, 0, -30);
+    plane1.position.set(0, -5, 0);
    // scene.add(plane1);
 
     var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0xffff00 , wireframe: true})); //amarelo
     plane2.rotation.set(0, 0, 0); // Front
-    plane2.position.set(37.5, 5, -15);
+    plane2.position.set(0, 0, 15);
     //scene.add(plane2);
 
     var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true  })); //rosa
     plane3.rotation.set(0, Math.PI / 2, 0); // Left
-    plane3.position.set(45, 5, -30);
+    plane3.position.set(-7.5, 0, 0);
     //scene.add(plane3);
 
     var plane4 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0x00ff00 , wireframe: true})); //verde
     plane4.rotation.set(0, Math.PI / 2, 0); // Right
-    plane4.position.set(30, 5, -30);
+    plane4.position.set(7.5, 0, 0);
     //scene.add(plane4);
 
     var plane5 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true })); //azul
     plane5.rotation.set(0, 0, 0); // Front
-    plane5.position.set(37.5, 5, -45);
+    plane5.position.set(0, 0, -15);
     //scene.add(plane5);
 
     contentor.add(plane1);
@@ -242,7 +242,7 @@ function createContentorCargas() {
     contentor.add(plane3);
     contentor.add(plane4);
     contentor.add(plane5);
-    contentor.position.set(0, 0, 30);
+    contentor.position.set(45, 5, 35);
     scene.add(contentor);
 
 }
@@ -365,7 +365,21 @@ function handleCollisions(){
             garraSobe = false;
             if (cargaMover.userData.movingUp == true){
                 cargaMover.userData.movingUp = false;
-                cargaMover.userData.movingForward = true;
+                
+                var garraWorldPosition = new THREE.Vector3();
+                garra.getWorldPosition(garraWorldPosition);
+                
+                var contentorWorldPosition = new THREE.Vector3();
+                contentor.getWorldPosition(contentorWorldPosition);
+
+                var distanciaGruaContentor = contentorWorldPosition.distanceTo(new THREE.Vector3(0, 0, 0));
+                var distanceToOrigin = garraWorldPosition.distanceTo(new THREE.Vector3(0, garraWorldPosition.y, 0));
+
+                if (distanciaGruaContentor < distanceToOrigin) {
+                    cargaMover.userData.movingBackwards = true;
+                } else {
+                    cargaMover.userData.movingForward = true;
+                }
             } else {
                 cargaMover.userData.movingBackUp = false; 
                 colisao = false;
@@ -373,19 +387,46 @@ function handleCollisions(){
         }
     }
     if (cargaMover.userData.movingForward == true) {
-        carrinhoIn = true;
-        var worldPosition = new THREE.Vector3();
-        garra.getWorldPosition(worldPosition);
+        carrinhoOut = true;
+        var garraWorldPosition = new THREE.Vector3();
+        garra.getWorldPosition(garraWorldPosition);
+        var contentorWorldPosition = new THREE.Vector3();
+        contentor.getWorldPosition(contentorWorldPosition);
+        var distanciaGruaContentor = contentorWorldPosition.distanceTo(new THREE.Vector3(0, 0, 0));
 
-        var distanceToOrigin = worldPosition.distanceTo(new THREE.Vector3(0, 0, 0));
-        if (distanceToOrigin < 50) {
-            carrinhoIn = false;
+        var distanceToOrigin = garraWorldPosition.distanceTo(new THREE.Vector3(0, garraWorldPosition.y, 0));
+
+        if (distanciaGruaContentor <= distanceToOrigin + 1 && distanciaGruaContentor >= distanceToOrigin -1) {
+            carrinhoOut = false;
             cargaMover.userData.movingForward = false;
-            cargaMover.userData.movingLeft = true;
+            if (garraWorldPosition.z < 0) {
+                cargaMover.userData.movingLeft = true;
+            } else {
+                cargaMover.userData.movingRight = true;
+            }
+        }
+    }
+    if (cargaMover.userData.movingBackwards == true) {
+        carrinhoIn = true;
+        var garraWorldPosition = new THREE.Vector3();
+        garra.getWorldPosition(garraWorldPosition);
+        var contentorWorldPosition = new THREE.Vector3();
+        contentor.getWorldPosition(contentorWorldPosition);
+        var distanciaGruaContentor = contentorWorldPosition.distanceTo(new THREE.Vector3(0, 0, 0));
+
+        var distanceToOrigin = garraWorldPosition.distanceTo(new THREE.Vector3(0, garraWorldPosition.y, 0));
+
+        if (distanciaGruaContentor <= distanceToOrigin + 1 && distanciaGruaContentor >= distanceToOrigin -1) {
+            carrinhoIn = false;
+            cargaMover.userData.movingBackwards = false;
+            if (garraWorldPosition.z < 0) {
+                cargaMover.userData.movingLeft = true;
+            } else {
+                cargaMover.userData.movingRight = true;
+            }
         }
     }
     if (cargaMover.userData.movingLeft == true) {
-        console.log('esquerda');
         cabineEsquerda = true;
         var contentorPosition = new THREE.Vector3();
         contentor.getWorldPosition(contentorPosition);
@@ -393,14 +434,29 @@ function handleCollisions(){
         var worldPosition = new THREE.Vector3();
         garra.getWorldPosition(worldPosition);
 
-        console.log("garra world " +worldPosition.x + ", " + worldPosition.y + ", " + worldPosition.z)
         var distance = worldPosition.distanceTo(contentorPosition);
 
-        if (distance < 59 && distance > 57 && worldPosition.x > 0) {
-            console.log(distance);
+        if (distance < 21 ) {
 
             cabineEsquerda = false;
             cargaMover.userData.movingLeft = false;
+            cargaMover.userData.movingDown = true;
+        }
+    }
+    if (cargaMover.userData.movingRight == true) {
+        cabineDireita = true;
+        var contentorPosition = new THREE.Vector3();
+        contentor.getWorldPosition(contentorPosition);
+
+        var worldPosition = new THREE.Vector3();
+        garra.getWorldPosition(worldPosition);
+
+        var distance = worldPosition.distanceTo(contentorPosition);
+
+        if (distance < 21 ) {
+
+            cabineDireita = false;
+            cargaMover.userData.movingRight = false;
             cargaMover.userData.movingDown = true;
         }
     }
