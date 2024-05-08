@@ -98,7 +98,7 @@ function createConjuntoCarrinho() {
     cable = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 10, 32), cable_material);
     cable.position.set(0, -13, 10);
     var carrinho = new THREE.Mesh(new THREE.BoxGeometry(15, 5, 20), carrinho_material);
-    carrinho.position.set(0, -5, 10);
+    carrinho.position.set(0, -6, 10);
     conjunto_carrinho = new THREE.Object3D();
     conjunto_carrinho.add(carrinho);
     conjunto_carrinho.add(cable);
@@ -131,14 +131,14 @@ function createTopoGrua() {
     var material_cabinete = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
     materials.push(material_cabinete);
     var traçao_do_carrinho = new THREE.Mesh(new THREE.BoxGeometry(20, 5, 90), material_traçao_do_carrinho);
-    traçao_do_carrinho.position.set(0, 0, 35);
+    traçao_do_carrinho.position.set(0, -1, 35);
     var lança = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 60), material_lança);
-    lança.position.set(0, 5, 45);
+    lança.position.set(0, 4, 45);
     var contra_lança = new THREE.Mesh(new THREE.BoxGeometry(20, 5, 40), material_contra_lança);
-    contra_lança.position.set(0, 0, -30);
-    var contra_peso = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 30), material_contra_peso);
+    contra_lança.position.set(0, -1, -30);
+    var contra_peso = new THREE.Mesh(new THREE.BoxGeometry(20, 9, 30), material_contra_peso);
     contra_peso.position.set(0, -8, -30);
-    var cabinete = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 20), material_cabinete);
+    var cabinete = new THREE.Mesh(new THREE.BoxGeometry(20, 9, 20), material_cabinete);
     cabinete.position.set(0, -8, 0);
 
     topo_grua = new THREE.Object3D();
@@ -157,7 +157,7 @@ function createTopoGrua() {
     materials.push(porta_lança_material);
     createTetrahedron(topo_grua, vertices, 0, 0, 0, porta_lança_material);
     createTirant(topo_grua, 0.5, 0.5, 56, 32, 32, false, -Math.PI/2.9, 0, 23, 17);
-    createTirant(topo_grua, 0.5, 0.5, 38, 32, 32, false, Math.PI/6, 0, 20, -19);
+    createTirant(topo_grua, 0.5, 0.5, 39, 32, 32, false, Math.PI/6, 0, 19, -20);
     topo_grua.add(conjunto_carrinho)
     topo_grua.position.set(0, 85, 0);
     scene.add(topo_grua);
@@ -277,32 +277,31 @@ function createScene() {
 
 function createCameras() {
     'use strict';
-    cameraFrontal = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 500);
+    cameraFrontal = new THREE.OrthographicCamera(-100, 100, 100, -100, 1, 1000);
     cameraFrontal.position.x = 0;
     cameraFrontal.position.y = 50;
     cameraFrontal.position.z = 80;
     cameraFrontal.lookAt(new THREE.Vector3(0, 50, 0));
     scene.add(cameraFrontal);
 
-    cameraLateral = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+    cameraLateral = new THREE.OrthographicCamera(-100, 100, 100, -100, 1, 1000);
     cameraLateral.position.x = 80;
     cameraLateral.position.y = 50;
     cameraLateral.position.z = 0;
     cameraLateral.lookAt(new THREE.Vector3(0, 50, 0));
     scene.add(cameraLateral);
 
-    cameraTopo = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+    cameraTopo = new THREE.OrthographicCamera(-100, 100, 100, -100, 1, 1000);
     cameraTopo.position.x = 0;
     cameraTopo.position.y = 170;
     cameraTopo.position.z = 0;
     cameraTopo.lookAt(scene.position);
     scene.add(cameraTopo);
-    // TODO: Mudar para (170, 170, 170) (mudei para ajudar a ver a colisão)
-    cameraFixaOrtogonal = new THREE.OrthographicCamera(-10, 10, 10, -10, 1, 1000); // ? Não entendi os valores
+    cameraFixaOrtogonal = new THREE.OrthographicCamera(-100, 100, 100, -100, 1, 1000);
     cameraFixaOrtogonal.position.x = 170;
     cameraFixaOrtogonal.position.y = 170;
     cameraFixaOrtogonal.position.z = 170;    
-    cameraFixaOrtogonal.lookAt(scene.position);
+    cameraFixaOrtogonal.lookAt(new THREE.Vector3(0, 50, 0));
     scene.add(cameraFixaOrtogonal);
 
     cameraFixaPerspectiva = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
@@ -817,33 +816,31 @@ function onKeyUp(e){
 
 }
 
-var hudCamera = new THREE.OrthographicCamera(-window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, -window.innerHeight / 2, 1, 1000);
 
-// Elementos do HUD
+///////////
+/* HUD */
+///////////
+var hudCamera = new THREE.OrthographicCamera(-window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, -window.innerHeight / 2, 1, 1000);
 var hudElements = [];
 
-// Função para adicionar elementos ao HUD
 function addHUDElement(element) {
     hudElements.push(element);
     updateHUD();
 }
 
-// Função para atualizar o HUD
 function updateHUD() {
     hudElements.forEach(function(element, index) {
         element.style.position = 'absolute';
-        element.style.top = 20 + index * 30 + 'px'; // Espaçamento vertical entre elementos
-        element.style.left = '20px'; // Posição horizontal fixa
+        element.style.top = 20 + index * 30 + 'px';
+        element.style.left = '20px';
         document.body.appendChild(element);
     });
 }
 
-// Exemplo de elemento do HUD para teclas ativas
 var hudKeysText = document.createElement('div');
 hudKeysText.textContent = 'Teclas ativas: Nenhuma';
 addHUDElement(hudKeysText);
 
-// Função para atualizar o texto do HUD com as teclas ativas
 function updateHUDKeysText(activeKeys) {
     hudKeysText.textContent = 'Teclas ativas: ' + activeKeys.join(', ');
 }
