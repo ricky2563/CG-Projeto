@@ -15,12 +15,13 @@ var geometry, material, mesh;
 var garra = new THREE.Object3D(), cable_garra, cable, conjunto_carrinho, topo_grua, base_grua = new THREE.Object3D(), finger_1, finger_2, finger_3, finger_4;
 
 var contentor = new THREE.Object3D();
-var cargas;
+var cargas = [];
+var chao;
 var cargaMover = new THREE.Object3D;
 
 var cameraFrontal, cameraLateral, cameraTopo, cameraFixaOrtogonal, cameraFixaPerspectiva, cameraMovelPerspectiva;
 
-var boundingBoxGarra, boundingBoxes;
+var boundingBoxGarra, boundingBoxes = [];
 
 var cabineDireita = false, cabineEsquerda = false, carrinhoIn = false, carrinhoOut = false, 
     garraAbre, garraFecha = false, garraDesce = false, garraSobe = false, colisao = false;
@@ -184,7 +185,7 @@ function createGrua() {
     createTopoGrua();
     createBaseGrua();
 }
-
+/*
 function createContentorCargas() {
     var carga1 = new THREE.Mesh(new THREE.DodecahedronGeometry(3, 1), new THREE.MeshBasicMaterial( { color: 0x08080, wireframe: true } ));
     carga1.position.set(77, 2, 50);
@@ -246,9 +247,103 @@ function createContentorCargas() {
     scene.add(contentor);
 
 }
+*/
+
+function createContentorCargas() {
+    // Posição do contentor
+    var contentorPosX = 45;
+    var contentorPosY = 5;
+    var contentorPosZ = 35;
+
+    // Definir os limites da área onde as cargas podem aparecer aleatoriamente
+    var minX = -67 //limite inferior carrinho
+    var maxX = 67 //limite superior carrinho
+    var minZ = -67 //limite inferior carrinho
+    var maxZ = 67 //limite superior carrinho
+
+    for (var i = 0; i < 4; i++) {
+        var randomX, randomZ;
+
+        // Garantir que as coordenadas não são as mesmas que as do contentor
+        do {
+            randomX = THREE.MathUtils.randFloat(minX, maxX);
+            randomZ = THREE.MathUtils.randFloat(minZ, maxZ);
+        } while (randomX === contentorPosX && randomZ === contentorPosZ);
+
+        var cargaGeometry;
+        var cargaMaterial;
+        var carga;
+
+        // Escolher uma forma geométrica aleatória para cada carga
+        var shape = Math.floor(Math.random() * 3); // 0, 1, or 2
+        switch (shape) {
+            case 0:
+                var dodecahedronSize = THREE.MathUtils.randFloat(2, 5); // Tamanho aleatório para dodecaedro
+                cargaGeometry = new THREE.DodecahedronGeometry(dodecahedronSize, 1);
+                cargaMaterial = new THREE.MeshBasicMaterial({ color: 0x08080, wireframe: true });
+                break;
+            case 1:
+                var icosahedronSize = THREE.MathUtils.randFloat(2, 5); // Tamanho aleatório para icosaedro
+                cargaGeometry = new THREE.IcosahedronGeometry(icosahedronSize, 0);
+                cargaMaterial = new THREE.MeshBasicMaterial({ color: 0x00080, wireframe: true });
+                break;
+            case 2:
+                var torusKnotSize = THREE.MathUtils.randFloat(1, 3); // Tamanho aleatório para torus knot
+                cargaGeometry = new THREE.TorusKnotGeometry(torusKnotSize, 0.4, 100, 2);
+                cargaMaterial = new THREE.MeshBasicMaterial({ color: 0x08000, wireframe: true });
+                break;
+        }
+
+        carga = new THREE.Mesh(cargaGeometry, cargaMaterial);
+        carga.position.set(randomX, 2, randomZ);
+        carga.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false, movingBackwards: false, movingRight: false };
+        scene.add(carga);
+        cargas.push(carga);
+
+        boundingBoxes.push(new THREE.Box3().setFromObject(carga));
+    }
+    
+    var color = new THREE.MeshBasicMaterial({ color: 0xf97306 , wireframe: true});
+
+    // Create planes for each side except the top
+    var plane1 = new THREE.Mesh(new THREE.PlaneGeometry(15, 30), color); //laranja
+    plane1.rotation.set(-Math.PI / 2, 0, 0); // Bottom
+    plane1.position.set(0, -5, 0);
+   // scene.add(plane1);
+
+    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0xffff00 , wireframe: true})); //amarelo
+    plane2.rotation.set(0, 0, 0); // Front
+    plane2.position.set(0, 0, 15);
+    //scene.add(plane2);
+
+    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true  })); //rosa
+    plane3.rotation.set(0, Math.PI / 2, 0); // Left
+    plane3.position.set(-7.5, 0, 0);
+    //scene.add(plane3);
+
+    var plane4 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0x00ff00 , wireframe: true})); //verde
+    plane4.rotation.set(0, Math.PI / 2, 0); // Right
+    plane4.position.set(7.5, 0, 0);
+    //scene.add(plane4);
+
+    var plane5 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true })); //azul
+    plane5.rotation.set(0, 0, 0); // Front
+    plane5.position.set(0, 0, -15);
+    //scene.add(plane5);
+
+    contentor.add(plane1);
+    contentor.add(plane2);
+    contentor.add(plane3);
+    contentor.add(plane4);
+    contentor.add(plane5);
+    contentor.position.set(contentorPosX, contentorPosY, contentorPosZ);
+    scene.add(contentor);
+}
+
+
 
 function createChao() {
-    var chao = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshBasicMaterial({ color: 0xff1299, wireframe: true}));  
+    chao = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshBasicMaterial({ color: 0xff1299, wireframe: true}));  
     chao.rotation.set(-Math.PI / 2, 0, 0); // Bottom
     chao.position.set(37.5, 0, -30);
     scene.add(chao);
@@ -266,8 +361,9 @@ function createScene() {
 
     //createTable(0,0,0);
     createGrua();
+    createChao(); 
     createContentorCargas();
-    createChao();    
+       
 
 }
 
