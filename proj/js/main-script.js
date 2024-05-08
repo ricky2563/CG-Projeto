@@ -78,7 +78,7 @@ function createGarra() {
     add_finger(garra, 2, -3, -2, finger_3);
     add_finger(garra, -2, -3, -2, finger_4);
     cameraMovelPerspectiva = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-    // Posicionar a câmera móvel no gancho da grua (supondo que o gancho está em (0, 0, 0))
+    // Posicionar a câmera móvel no gancho da grua (supondo que o garra está em (0, 0, 0))
     cameraMovelPerspectiva.position.set(0, -2.5 , 0); 
     cameraMovelPerspectiva.lookAt(0,cameraMovelPerspectiva.position.y - 1,0); // Apontar para baixo
     garra.position.set(0, -20, 10);
@@ -820,7 +820,6 @@ function onKeyUp(e){
 ///////////
 /* HUD */
 ///////////
-var hudCamera = new THREE.OrthographicCamera(-window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, -window.innerHeight / 2, 1, 1000);
 var hudElements = [];
 
 function addHUDElement(element) {
