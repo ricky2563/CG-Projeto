@@ -12,11 +12,10 @@ var camera, scene, renderer;
 
 var geometry, material, mesh;
 
-var garra = new THREE.Object3D(), cable_garra, cable, conjunto_carrinho, topo_grua, base_grua = new THREE.Object3D(), finger_1, finger_2, finger_3, finger_4;
+var garra = new THREE.Object3D(), grua = new THREE.Object3D(), cable, conjunto_carrinho, topo_grua, base_grua = new THREE.Object3D(), finger_1, finger_2, finger_3, finger_4;
 
 var contentor = new THREE.Object3D();
 var cargas = [];
-var chao;
 var cargaMover = new THREE.Object3D;
 
 var cameraFrontal, cameraLateral, cameraTopo, cameraFixaOrtogonal, cameraFixaPerspectiva, cameraMovelPerspectiva;
@@ -26,7 +25,7 @@ var boundingBoxGarra, boundingBoxes = [];
 var cabineDireita = false, cabineEsquerda = false, carrinhoIn = false, carrinhoOut = false, 
     garraAbre, garraFecha = false, garraDesce = false, garraSobe = false, colisao = false;
 
-var activeKeys = [];
+var activeKeys = [], currentCamera = '5';
 
 var materials = [];
 
@@ -44,7 +43,7 @@ function createTetrahedron(obj, vertices, x, y, z, tetrahedron_material){
 
 function add_finger(obj, x, y, z, finger) {
     var cub;
-    var finger_cube_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var finger_cube_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(finger_cube_material);
     cub = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), finger_cube_material);
     var vertices = [
@@ -53,7 +52,7 @@ function add_finger(obj, x, y, z, finger) {
         new THREE.Vector3(0, 0, 0.5),
         new THREE.Vector3(-0.5, 0, -0.5)
     ];
-    var finger_claw_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var finger_claw_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(finger_claw_material);
     createTetrahedron(finger, vertices, 0, -0.5, 0, finger_claw_material);
     finger.add(cub);
@@ -65,7 +64,7 @@ function add_finger(obj, x, y, z, finger) {
 function createGarra() {
     'use strict';
     var big_cube;
-    var big_cube_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var big_cube_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(big_cube_material);
     big_cube = new THREE.Mesh(new THREE.BoxGeometry(5, 5, 5), big_cube_material);
     big_cube.position.set(0,0,0);
@@ -92,9 +91,9 @@ function createGarra() {
 }
 
 function createConjuntoCarrinho() {
-    var cable_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var cable_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(cable_material);
-    var carrinho_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var carrinho_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(carrinho_material);
     cable = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 10, 32), cable_material);
     cable.position.set(0, -13, 10);
@@ -110,7 +109,7 @@ function createConjuntoCarrinho() {
 function createTirant(obj, radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, rotation, x, y, z){
 
     // Create geometry for the cylinder
-    var material_tirant = new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true });
+    var material_tirant = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded);
 
     // Create the cylinder mesh
@@ -121,15 +120,15 @@ function createTirant(obj, radiusTop, radiusBottom, height, radialSegments, heig
 }
 
 function createTopoGrua() {
-    var material_traçao_do_carrinho = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material_traçao_do_carrinho = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(material_traçao_do_carrinho);
-    var material_lança = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material_lança = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(material_lança);
-    var material_contra_lança = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material_contra_lança = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(material_contra_lança);
-    var material_contra_peso = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material_contra_peso = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(material_contra_peso);
-    var material_cabinete = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material_cabinete = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(material_cabinete);
     var traçao_do_carrinho = new THREE.Mesh(new THREE.BoxGeometry(20, 5, 90), material_traçao_do_carrinho);
     traçao_do_carrinho.position.set(0, -1, 35);
@@ -154,7 +153,7 @@ function createTopoGrua() {
         new THREE.Vector3(10, 0, -10),
         new THREE.Vector3(0, 0, 10)
     ];
-    var porta_lança_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var porta_lança_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(porta_lança_material);
     createTetrahedron(topo_grua, vertices, 0, 0, 0, porta_lança_material);
     createTirant(topo_grua, 0.5, 0.5, 56, 32, 32, false, -Math.PI/2.9, 0, 23, 17);
@@ -165,9 +164,9 @@ function createTopoGrua() {
 }
 
 function createBaseGrua() {
-    var base_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var base_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(base_material);
-    var suporte_material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var suporte_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(suporte_material);
     var base = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 30), base_material);
     base.position.set(0, 5, 0);
@@ -184,70 +183,12 @@ function createGrua() {
     createConjuntoCarrinho();
     createTopoGrua();
     createBaseGrua();
+    grua = new THREE.Object3D();
+    grua.add(topo_grua);
+    grua.add(base_grua);
+    scene.add(grua);
 }
-/*
-function createContentorCargas() {
-    var carga1 = new THREE.Mesh(new THREE.DodecahedronGeometry(3, 1), new THREE.MeshBasicMaterial( { color: 0x08080, wireframe: true } ));
-    carga1.position.set(77, 2, 50);
-    carga1.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false, movingBackwards: false, movingRight: false};
-    scene.add(carga1);
-    var carga2 = new THREE.Mesh(new THREE.IcosahedronGeometry(3, 0), new THREE.MeshBasicMaterial( { color: 0x00080, wireframe: true } ));
-    carga2.position.set(-77, 2, 30);
-    carga2.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false, movingBackwards: false, movingRight: false};
-    scene.add(carga2);
-    var carga3 = new THREE.Mesh(new THREE.TorusKnotGeometry( 1, 0.4, 100, 2 ), new THREE.MeshBasicMaterial( { color: 0x08000, wireframe: true } ));
-    carga3.position.set(57, 2, -44);
-    carga3.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false, movingBackwards: false, movingRight: false};
-    scene.add(carga3);
-    var carga4 = new THREE.Mesh(new THREE.TorusGeometry(1, 1, 12, 48), new THREE.MeshBasicMaterial( { color: 0xff70cb, wireframe: true } ));
-    carga4.position.set(0, 2, 54);
-    carga4.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false, movingBackwards: false, movingRight: false};
-    scene.add(carga4);
-    
-    cargas = [carga1, carga2, carga3, carga4];
-    boundingBoxes = [];
-    for(var i = 0; i < cargas.length; i++){
-        boundingBoxes[i] = new THREE.Box3().setFromObject(cargas[i]);
-    }
 
-    var color = new THREE.MeshBasicMaterial({ color: 0xf97306 , wireframe: true});
-
-    // Create planes for each side except the top
-    var plane1 = new THREE.Mesh(new THREE.PlaneGeometry(15, 30), color); //laranja
-    plane1.rotation.set(-Math.PI / 2, 0, 0); // Bottom
-    plane1.position.set(0, -5, 0);
-   // scene.add(plane1);
-
-    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0xffff00 , wireframe: true})); //amarelo
-    plane2.rotation.set(0, 0, 0); // Front
-    plane2.position.set(0, 0, 15);
-    //scene.add(plane2);
-
-    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true  })); //rosa
-    plane3.rotation.set(0, Math.PI / 2, 0); // Left
-    plane3.position.set(-7.5, 0, 0);
-    //scene.add(plane3);
-
-    var plane4 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0x00ff00 , wireframe: true})); //verde
-    plane4.rotation.set(0, Math.PI / 2, 0); // Right
-    plane4.position.set(7.5, 0, 0);
-    //scene.add(plane4);
-
-    var plane5 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true })); //azul
-    plane5.rotation.set(0, 0, 0); // Front
-    plane5.position.set(0, 0, -15);
-    //scene.add(plane5);
-
-    contentor.add(plane1);
-    contentor.add(plane2);
-    contentor.add(plane3);
-    contentor.add(plane4);
-    contentor.add(plane5);
-    contentor.position.set(45, 5, 35);
-    scene.add(contentor);
-
-}
-*/
 
 function createContentorCargas() {
     // Posição do contentor
@@ -261,7 +202,7 @@ function createContentorCargas() {
     var minZ = -67 //limite inferior carrinho
     var maxZ = 67 //limite superior carrinho
 
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < 8; i++) {
         var randomX, randomZ;
 
         // Garantir que as coordenadas não são as mesmas que as do contentor
@@ -280,17 +221,22 @@ function createContentorCargas() {
             case 0:
                 var dodecahedronSize = THREE.MathUtils.randFloat(2, 5); // Tamanho aleatório para dodecaedro
                 cargaGeometry = new THREE.DodecahedronGeometry(dodecahedronSize, 1);
-                cargaMaterial = new THREE.MeshBasicMaterial({ color: 0x08080, wireframe: true });
+                cargaMaterial = new THREE.MeshBasicMaterial({ color: 0x339933, wireframe: true });
                 break;
             case 1:
                 var icosahedronSize = THREE.MathUtils.randFloat(2, 5); // Tamanho aleatório para icosaedro
                 cargaGeometry = new THREE.IcosahedronGeometry(icosahedronSize, 0);
-                cargaMaterial = new THREE.MeshBasicMaterial({ color: 0x00080, wireframe: true });
+                cargaMaterial = new THREE.MeshBasicMaterial({ color: 0xff5555, wireframe: true });
                 break;
             case 2:
                 var torusKnotSize = THREE.MathUtils.randFloat(1, 3); // Tamanho aleatório para torus knot
                 cargaGeometry = new THREE.TorusKnotGeometry(torusKnotSize, 0.4, 100, 2);
-                cargaMaterial = new THREE.MeshBasicMaterial({ color: 0x08000, wireframe: true });
+                cargaMaterial = new THREE.MeshBasicMaterial({ color: 0xff3300, wireframe: true });
+                break;
+            case 3:
+                var torusSize = THREE.MathUtils.randFloat(1, 3); // Tamanho aleatório para torus knot
+                cargaGeometry = new THREE.Mesh(new THREE.TorusGeometry(torusSize, 1, 12, 48));
+                cargaMaterial = new THREE.MeshBasicMaterial( { color: 0x336699, wireframe: true } );
                 break;
         }
 
@@ -303,33 +249,27 @@ function createContentorCargas() {
         boundingBoxes.push(new THREE.Box3().setFromObject(carga));
     }
     
-    var color = new THREE.MeshBasicMaterial({ color: 0xf97306 , wireframe: true});
+    var color = new THREE.MeshBasicMaterial({ color: 0x003366 , wireframe: true});
 
-    // Create planes for each side except the top
     var plane1 = new THREE.Mesh(new THREE.PlaneGeometry(15, 30), color); //laranja
     plane1.rotation.set(-Math.PI / 2, 0, 0); // Bottom
     plane1.position.set(0, -5, 0);
-   // scene.add(plane1);
 
-    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0xffff00 , wireframe: true})); //amarelo
+    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), color); //amarelo
     plane2.rotation.set(0, 0, 0); // Front
     plane2.position.set(0, 0, 15);
-    //scene.add(plane2);
 
-    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true  })); //rosa
+    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), color); //rosa
     plane3.rotation.set(0, Math.PI / 2, 0); // Left
     plane3.position.set(-7.5, 0, 0);
-    //scene.add(plane3);
 
-    var plane4 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshBasicMaterial({ color: 0x00ff00 , wireframe: true})); //verde
+    var plane4 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), color); //verde
     plane4.rotation.set(0, Math.PI / 2, 0); // Right
     plane4.position.set(7.5, 0, 0);
-    //scene.add(plane4);
 
-    var plane5 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true })); //azul
+    var plane5 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), color); //azul
     plane5.rotation.set(0, 0, 0); // Front
     plane5.position.set(0, 0, -15);
-    //scene.add(plane5);
 
     contentor.add(plane1);
     contentor.add(plane2);
@@ -340,16 +280,9 @@ function createContentorCargas() {
     scene.add(contentor);
 }
 
-
-
-function createChao() {
-    chao = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshBasicMaterial({ color: 0xff1299, wireframe: true}));  
-    chao.rotation.set(-Math.PI / 2, 0, 0); // Bottom
-    chao.position.set(37.5, 0, -30);
-    scene.add(chao);
-}
-
+/////////////////
 /* CREATE SCENE*/
+/////////////////
 
 function createScene() {
     'use strict';
@@ -361,10 +294,7 @@ function createScene() {
 
     //createTable(0,0,0);
     createGrua();
-    createChao(); 
     createContentorCargas();
-       
-
 }
 
 //////////////////////
@@ -412,14 +342,6 @@ function createCameras() {
 }
 
 
-/////////////////////
-/* CREATE LIGHT(S) */
-/////////////////////
-
-////////////////////////
-/* CREATE OBJECT3D(S) */
-////////////////////////
-
 //////////////////////
 /* CHECK COLLISIONS */
 //////////////////////
@@ -435,6 +357,7 @@ function checkCollisions(){
             
             
             garra.add(cargas[i]);
+            garraFecha = true;
             var cargaPosicaoRelativa = new THREE.Vector3();
             garra.getWorldPosition(cargaPosicaoRelativa);
             var worldPosition = garra.worldToLocal(cargaPosicaoRelativa);
@@ -477,6 +400,7 @@ function handleCollisions(){
                 }
             } else {
                 cargaMover.userData.movingBackUp = false; 
+                garraAbre = false;
                 colisao = false;
             }
         }
@@ -560,6 +484,8 @@ function handleCollisions(){
         if (garra.position.y < -70) {
             garraDesce = false;
             cargaMover.userData.movingDown = false;
+            garraFecha = false;
+            garraAbre = true;
             garra.remove(cargaMover);
             cargaMover.userData.movingBackUp = true;
         }
@@ -761,94 +687,145 @@ function onKeyDown(event) {
             materials.forEach(function (material) {
                 material.wireframe = !material.wireframe;
             });
+            if (!activeKeys.includes('7')){
+                activeKeys.push('7');
+            } else {
+                activeKeys.splice(activeKeys.indexOf('7'), 1);
+            }
             break;
 
         case 65: //A
         case 97: //a
-            if (!activeKeys.includes('A')){
-                activeKeys.push('A');
+            if(!colisao) {
+                if (!activeKeys.includes('A')){
+                    activeKeys.push('A');
+                }
+                cabineEsquerda = true;
             }
-            cabineEsquerda = true;
             break;
 
         case 81: //Q
         case 113: //q
-            if (!activeKeys.includes('Q')){
-                activeKeys.push('Q');
+            if(!colisao) {
+                if (!activeKeys.includes('Q')){
+                    activeKeys.push('Q');
+                }
+                cabineDireita = true;
             }
-            cabineDireita = true;
             break;
 
         case 87: //w
         case 119: //W
-            if (!activeKeys.includes('W')){
-                activeKeys.push('W');
+            if(!colisao) {
+                if (!activeKeys.includes('W')){
+                    activeKeys.push('W');
+                }
+                carrinhoOut = true;
             }
-            carrinhoOut = true;
             break;
 
         case 83: //s
         case 115: //S
-            if (!activeKeys.includes('S')){
-                activeKeys.push('S');
+            if(!colisao) {
+                if (!activeKeys.includes('S')){
+                    activeKeys.push('S');
+                }
+                carrinhoIn = true;
             }
-            carrinhoIn = true;
             break;
 
         case 49: // Tecla '1' - Câmera frontal
             renderer.render(scene, cameraFrontal);
             camera = cameraFrontal;
+            if (!activeKeys.includes('1')){
+                activeKeys.splice(activeKeys.indexOf(currentCamera), 1);
+                activeKeys.push('1');
+                currentCamera = '1';
+            }
             break;
         case 50: // Tecla '2' - Câmera lateral
             renderer.render(scene, cameraLateral);
             camera = cameraLateral;
+            if (!activeKeys.includes('2')){
+                activeKeys.splice(activeKeys.indexOf(currentCamera), 1);
+                activeKeys.push('2');
+                currentCamera = '2';
+            }
             break;
         case 51: // Tecla '3' - Câmera topo
             renderer.render(scene, cameraTopo);
             camera = cameraTopo;
+            if (!activeKeys.includes('3')){
+                activeKeys.splice(activeKeys.indexOf(currentCamera), 1);
+                activeKeys.push('3');
+                currentCamera = '3';
+            }
             break;
         case 52: // Tecla '4' - Câmera fixa ortogonal
             renderer.render(scene, cameraFixaOrtogonal);
             camera = cameraFixaOrtogonal;
+            if (!activeKeys.includes('4')){
+                activeKeys.splice(activeKeys.indexOf(currentCamera), 1);
+                activeKeys.push('4');
+                currentCamera = '4';
+            }
             break;
         case 53: // Tecla '5' - Câmera fixa perspectiva
             renderer.render(scene, cameraFixaPerspectiva);
             camera = cameraFixaPerspectiva;
+            if (!activeKeys.includes('5')){
+                activeKeys.splice(activeKeys.indexOf(currentCamera), 1);
+                activeKeys.push('5');
+                currentCamera = '5';
+            }
             break;
         case 54: // Tecla '6' - Câmera móvel perspectiva
             renderer.render(scene, cameraMovelPerspectiva);
             camera = cameraMovelPerspectiva;
+            if (!activeKeys.includes('6')){
+                activeKeys.splice(activeKeys.indexOf(currentCamera), 1);
+                activeKeys.push('6');
+                currentCamera = '6';
+            }
             break;
         case 69: //E
         case 101: //e
-            if (!activeKeys.includes('E')){
-                activeKeys.push('E');
+            if(!colisao) {
+                if (!activeKeys.includes('E')){
+                    activeKeys.push('E');
+                }
+                garraDesce = true;
             }
-            garraDesce = true;
             break;
 
         case 68: //D
         case 100: //d
-            if (!activeKeys.includes('D')){
-                activeKeys.push('D');
+            if(!colisao) {
+                if (!activeKeys.includes('D')){
+                    activeKeys.push('D');
+                }
+                garraSobe = true;
             }
-            garraSobe = true;
             break;
 
         case 82: //R
         case 114: //r
-            if (!activeKeys.includes('R')){
-                activeKeys.push('R');
+            if(!colisao) {
+                if (!activeKeys.includes('R')){
+                    activeKeys.push('R');
+                }
+                garraAbre = true;
             }
-            garraAbre = true;
             break;
 
         case 70: //F
         case 102: //f
-            if (!activeKeys.includes('F')){
-                activeKeys.push('F');
+            if(!colisao){
+                if (!activeKeys.includes('F')){
+                    activeKeys.push('F');
+                }
+                garraFecha = true;
             }
-            garraFecha = true;
             break;
     }
 }
