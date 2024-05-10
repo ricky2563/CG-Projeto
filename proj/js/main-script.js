@@ -81,7 +81,7 @@ function createGarra() {
     // Posicionar a câmera móvel no gancho da grua (supondo que o garra está em (0, 0, 0))
     cameraMovelPerspectiva.position.set(0, -2.5 , 0); 
     cameraMovelPerspectiva.lookAt(0,cameraMovelPerspectiva.position.y - 1,0); // Apontar para baixo
-    garra.position.set(0, -20, 10);
+    garra.position.set(0, -18.5, 10);
     garra.add(cameraMovelPerspectiva);
     const box = new THREE.Box3();
 
@@ -91,14 +91,14 @@ function createGarra() {
 }
 
 function createConjuntoCarrinho() {
-    var cable_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
+    var cable_material = new THREE.MeshBasicMaterial({ color: 0x333333, wireframe: true });
     materials.push(cable_material);
-    var carrinho_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
+    var carrinho_material = new THREE.MeshBasicMaterial({ color: 0x333333, wireframe: true });
     materials.push(carrinho_material);
     cable = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 10, 32), cable_material);
-    cable.position.set(0, -13, 10);
+    cable.position.set(0, -11, 10);
     var carrinho = new THREE.Mesh(new THREE.BoxGeometry(15, 5, 20), carrinho_material);
-    carrinho.position.set(0, -6, 10);
+    carrinho.position.set(0, -3.5, 10);
     conjunto_carrinho = new THREE.Object3D();
     conjunto_carrinho.add(carrinho);
     conjunto_carrinho.add(cable);
@@ -109,7 +109,7 @@ function createConjuntoCarrinho() {
 function createTirant(obj, radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, rotation, x, y, z){
 
     // Create geometry for the cylinder
-    var material_tirant = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
+    var material_tirant = new THREE.MeshBasicMaterial({ color: 0x333333, wireframe: true });
     geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded);
 
     // Create the cylinder mesh
@@ -128,18 +128,18 @@ function createTopoGrua() {
     materials.push(material_contra_lança);
     var material_contra_peso = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(material_contra_peso);
-    var material_cabinete = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
+    var material_cabinete = new THREE.MeshBasicMaterial({ color: 0xff9900, wireframe: true });
     materials.push(material_cabinete);
     var traçao_do_carrinho = new THREE.Mesh(new THREE.BoxGeometry(20, 5, 90), material_traçao_do_carrinho);
-    traçao_do_carrinho.position.set(0, -1, 35);
+    traçao_do_carrinho.position.set(0, 1.5, 35);
     var lança = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 60), material_lança);
-    lança.position.set(0, 4, 45);
+    lança.position.set(0, 9, 45);
     var contra_lança = new THREE.Mesh(new THREE.BoxGeometry(20, 5, 40), material_contra_lança);
-    contra_lança.position.set(0, -1, -30);
+    contra_lança.position.set(0, 1.5, -30);
     var contra_peso = new THREE.Mesh(new THREE.BoxGeometry(20, 9, 30), material_contra_peso);
-    contra_peso.position.set(0, -8, -30);
+    contra_peso.position.set(0, -5.5, -30);
     var cabinete = new THREE.Mesh(new THREE.BoxGeometry(20, 9, 20), material_cabinete);
-    cabinete.position.set(0, -8, 0);
+    cabinete.position.set(0, -5.5, 0);
 
     topo_grua = new THREE.Object3D();
     topo_grua.add(traçao_do_carrinho);
@@ -153,25 +153,25 @@ function createTopoGrua() {
         new THREE.Vector3(10, 0, -10),
         new THREE.Vector3(0, 0, 10)
     ];
-    var porta_lança_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
+    var porta_lança_material = new THREE.MeshBasicMaterial({ color: 0xff9900, wireframe: true });
     materials.push(porta_lança_material);
-    createTetrahedron(topo_grua, vertices, 0, 0, 0, porta_lança_material);
-    createTirant(topo_grua, 0.5, 0.5, 56, 32, 32, false, -Math.PI/2.9, 0, 23, 17);
-    createTirant(topo_grua, 0.5, 0.5, 39, 32, 32, false, Math.PI/6, 0, 19, -20);
+    createTetrahedron(topo_grua, vertices, 0, 4, 0, porta_lança_material);
+    createTirant(topo_grua, 0.5, 0.5, 56, 32, 32, false, -Math.PI/2.9, 0, 27, 17);
+    createTirant(topo_grua, 0.5, 0.5, 39, 32, 32, false, Math.PI/6, 0, 23, -20);
     topo_grua.add(conjunto_carrinho)
     topo_grua.position.set(0, 85, 0);
     scene.add(topo_grua);
 }
 
 function createBaseGrua() {
-    var base_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
+    var base_material = new THREE.MeshBasicMaterial({ color: 0x333333, wireframe: true });
     materials.push(base_material);
     var suporte_material = new THREE.MeshBasicMaterial({ color: 0xffcc00, wireframe: true });
     materials.push(suporte_material);
     var base = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 30), base_material);
     base.position.set(0, 5, 0);
     var suporte = new THREE.Mesh(new THREE.BoxGeometry(20, 65, 20), suporte_material);
-    suporte.position.set(0, 40, 0);
+    suporte.position.set(0, 42.5, 0);
     base_grua.add(base);
     base_grua.add(suporte);
     scene.add(base_grua);
@@ -269,27 +269,32 @@ function createContentorCargas() {
         boundingBoxes.push(new THREE.Box3().setFromObject(carga));
     }
     
-    var color = new THREE.MeshBasicMaterial({ color: 0x003366 , wireframe: true});
+    var material_contentor = new THREE.MeshBasicMaterial({ color: 0x003366, wireframe: true });
+    materials.push(material_contentor);
+    var material_contentor_bottom = new THREE.MeshBasicMaterial({ color: 0x006699, wireframe: true });
+    materials.push(material_contentor_bottom);
 
-    var plane1 = new THREE.Mesh(new THREE.PlaneGeometry(15, 30), color); //laranja
+    var plane1 = new THREE.Mesh(new THREE.PlaneGeometry(15, 30), material_contentor_bottom); 
     plane1.rotation.set(-Math.PI / 2, 0, 0); // Bottom
     plane1.position.set(0, -5, 0);
 
-    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), color); //amarelo
+    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), material_contentor); 
     plane2.rotation.set(0, 0, 0); // Front
     plane2.position.set(0, 0, 15);
 
-    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), color); //rosa
+    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), material_contentor); 
     plane3.rotation.set(0, Math.PI / 2, 0); // Left
     plane3.position.set(-7.5, 0, 0);
 
-    var plane4 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), color); //verde
+    var plane4 = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), material_contentor); 
     plane4.rotation.set(0, Math.PI / 2, 0); // Right
     plane4.position.set(7.5, 0, 0);
 
-    var plane5 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), color); //azul
+    var plane5 = new THREE.Mesh(new THREE.PlaneGeometry(15, 10), material_contentor); 
     plane5.rotation.set(0, 0, 0); // Front
     plane5.position.set(0, 0, -15);
+
+   
 
     contentor.add(plane1);
     contentor.add(plane2);
