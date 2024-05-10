@@ -217,7 +217,7 @@ function createContentorCargas() {
     var baseMinZ = baseGruaPosZ - baseGruaHalfDepth; // limite inferior base grua
     var baseMaxZ = baseGruaPosZ + baseGruaHalfDepth; // limite superior base grua
 
-    for (var i = 0; i < 8; i++) {
+    for (var i = 0; i < 10; i++) {
         var randomX, randomZ;
 
         // Garantir que as coordenadas não estejam dentro dos limites do contentor e fora da base da grua
@@ -231,42 +231,54 @@ function createContentorCargas() {
         var cargaGeometry;
         var cargaMaterial;
         var carga;
+        var size;
 
         // Escolher uma forma geométrica aleatória para cada carga
         switch (i) {
             case 0:
             case 1:
-                var dodecahedronSize = THREE.MathUtils.randFloat(2, 5); // Tamanho aleatório para dodecaedro
-                cargaGeometry = new THREE.DodecahedronGeometry(dodecahedronSize, 1);
+                size = THREE.MathUtils.randFloat(2, 5); // Tamanho aleatório para dodecaedro
+                cargaGeometry = new THREE.DodecahedronGeometry(size, 1);
                 cargaMaterial = new THREE.MeshBasicMaterial({ color: 0x339933, wireframe: true });
                 break;
             case 2:
             case 3:
-                var icosahedronSize = THREE.MathUtils.randFloat(2, 5); // Tamanho aleatório para icosaedro
-                cargaGeometry = new THREE.IcosahedronGeometry(icosahedronSize, 0);
+                size = THREE.MathUtils.randFloat(2, 5); // Tamanho aleatório para icosaedro
+                cargaGeometry = new THREE.IcosahedronGeometry(size, 0);
                 cargaMaterial = new THREE.MeshBasicMaterial({ color: 0xff5555, wireframe: true });
                 break;
             case 4:
             case 5:
-                var torusKnotSize = THREE.MathUtils.randFloat(1, 3); // Tamanho aleatório para torus knot
-                cargaGeometry = new THREE.TorusKnotGeometry(torusKnotSize, 0.4, 100, 2);
+                size = THREE.MathUtils.randFloat(1, 3); // Tamanho aleatório para torus knot
+                cargaGeometry = new THREE.TorusKnotGeometry(size, 0.4, 100, 2);
                 cargaMaterial = new THREE.MeshBasicMaterial({ color: 0xff3300, wireframe: true });
                 break;
             case 6:
             case 7:
-                var torusSize = THREE.MathUtils.randFloat(1, 3); // Tamanho aleatório para torus knot
-                cargaGeometry = new THREE.TorusGeometry(torusSize, 1, 12, 48);
+                size = THREE.MathUtils.randFloat(1, 3); // Tamanho aleatório para torus knot
+                cargaGeometry = new THREE.TorusGeometry(size, 1, 12, 48);
                 cargaMaterial = new THREE.MeshBasicMaterial( { color: 0x336699, wireframe: true } );
+                break;
+            case 8:
+            case 9:
+                size = THREE.MathUtils.randFloat(1, 4); // Tamanho aleatório para cubo
+                cargaGeometry = new THREE.BoxGeometry(size,size,size);
+                cargaMaterial = new THREE.MeshBasicMaterial( { color: 0xcc00cc, wireframe: true } );
                 break;
         }
 
         carga = new THREE.Mesh(cargaGeometry, cargaMaterial);
-        carga.position.set(randomX, 2, randomZ);
+
+        var boundingBox = new THREE.Box3().setFromObject(carga);
+
+        var height = boundingBox.max.y - boundingBox.min.y;
+
+        carga.position.set(randomX, height/2, randomZ);
         carga.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false, movingBackwards: false, movingRight: false };
         scene.add(carga);
         cargas.push(carga);
 
-        boundingBoxes.push(new THREE.Box3().setFromObject(carga));
+        boundingBoxes.push(boundingBox);
     }
     
     var material_contentor = new THREE.MeshBasicMaterial({ color: 0x003366, wireframe: true });
