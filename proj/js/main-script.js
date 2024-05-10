@@ -323,6 +323,11 @@ function createScene() {
 
 function createCameras() {
     'use strict';
+
+    const aspectRatio = window.innerWidth / window.innerHeight;
+    const viewHeight = 160;
+    const viewWidth = viewHeight * aspectRatio;
+    
     cameraFrontal = new THREE.OrthographicCamera(-100, 100, 100, -100, 1, 1000);
     cameraFrontal.position.x = 0;
     cameraFrontal.position.y = 50;
@@ -337,7 +342,7 @@ function createCameras() {
     cameraLateral.lookAt(new THREE.Vector3(0, 50, 0));
     scene.add(cameraLateral);
 
-    cameraTopo = new THREE.OrthographicCamera(-100, 100, 100, -100, 1, 1000);
+    cameraTopo = new THREE.OrthographicCamera(-viewWidth/2, viewWidth/2, viewHeight/2, -viewHeight/2, 0.1, 2000);
     cameraTopo.position.x = 0;
     cameraTopo.position.y = 170;
     cameraTopo.position.z = 0;
