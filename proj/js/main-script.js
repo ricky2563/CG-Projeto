@@ -190,14 +190,10 @@ function createGrua() {
 }
 
 
-function createContentorCargas() {
+function createCargas() {
         // Posição do contentor
-    var contentorPosX = 45;
-    var contentorPosY = 5;
-    var contentorPosZ = 35;
-    var contentorHalfWidth = 15; // Metade da largura do contentor
-    var contentorHalfDepth = 15; // Metade da profundidade do contentor
-
+    /*
+    
     // Posição da base da grua
     var baseGruaPosX = 0;
     var baseGruaPosY = 5;
@@ -215,7 +211,18 @@ function createContentorCargas() {
     var baseMinX = baseGruaPosX - baseGruaHalfWidth; // limite inferior base grua
     var baseMaxX = baseGruaPosX + baseGruaHalfWidth; // limite superior base grua
     var baseMinZ = baseGruaPosZ - baseGruaHalfDepth; // limite inferior base grua
-    var baseMaxZ = baseGruaPosZ + baseGruaHalfDepth; // limite superior base grua
+    var baseMaxZ = baseGruaPosZ + baseGruaHalfDepth; // limite superior base grua*/
+    
+    var contentorHalfWidth = 15; // Metade da largura do contentor
+    var contentorHalfDepth = 15; // Metade da profundidade do contentor
+
+    var minX = -67 + contentorHalfWidth; // limite inferior carrinho + metade da largura do contentor
+    var maxX = 67 - contentorHalfWidth; // limite superior carrinho - metade da largura do contentor
+    var minZ = -67 + contentorHalfDepth; // limite inferior carrinho + metade da profundidade do contentor
+    var maxZ = 67 - contentorHalfDepth; // limite superior carrinho - metade da profundidade do contentor
+
+    var boundingBoxBase = new THREE.Box3().setFromObject(base_grua);
+    var boundingBoxContentor = new THREE.Box3().setFromObject(contentor);
 
     for (var i = 0; i < 10; i++) {
         var randomX, randomZ;
@@ -224,9 +231,9 @@ function createContentorCargas() {
         do {
             randomX = THREE.MathUtils.randFloat(minX, maxX);
             randomZ = THREE.MathUtils.randFloat(minZ, maxZ);
-        } while ((randomX >= baseMinX && randomX <= baseMaxX && randomZ >= baseMinZ && randomZ <= baseMaxZ) || // Dentro da base da grua
-                 (randomX >= contentorPosX - contentorHalfWidth && randomX <= contentorPosX + contentorHalfWidth && // Dentro do contentor
-                  randomZ >= contentorPosZ - contentorHalfDepth && randomZ <= contentorPosZ + contentorHalfDepth));
+        } while ((randomX >= boundingBoxBase.min.x && randomX <= boundingBoxBase.max.x && randomZ >= boundingBoxBase.min.z && randomZ <= boundingBoxBase.max.z) || // Dentro da base da grua
+                 (randomX >= boundingBoxContentor.min.x && randomX <= boundingBoxContentor.max.x && // Dentro do contentor
+                  randomZ >= boundingBoxContentor.min.z && randomZ <= boundingBoxContentor.max.z));
 
         var cargaGeometry;
         var cargaMaterial;
@@ -281,6 +288,10 @@ function createContentorCargas() {
         boundingBoxes.push(boundingBox);
     }
     
+}
+
+function createContentor() {
+
     var material_contentor = new THREE.MeshBasicMaterial({ color: 0x003366, wireframe: true });
     materials.push(material_contentor);
     var material_contentor_bottom = new THREE.MeshBasicMaterial({ color: 0x006699, wireframe: true });
@@ -307,6 +318,9 @@ function createContentorCargas() {
     plane5.position.set(0, 0, -15);
 
    
+    var contentorPosX = 45;
+    var contentorPosY = 5;
+    var contentorPosZ = 35;
 
     contentor.add(plane1);
     contentor.add(plane2);
@@ -331,7 +345,8 @@ function createScene() {
 
     //createTable(0,0,0);
     createGrua();
-    createContentorCargas();
+    createContentor();
+    createCargas();
 }
 
 //////////////////////
