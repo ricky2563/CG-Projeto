@@ -159,7 +159,7 @@ function createTopoGrua() {
     createTirant(topo_grua, 0.5, 0.5, 56, 32, 32, false, -Math.PI/2.9, 0, 23, 17);
     createTirant(topo_grua, 0.5, 0.5, 39, 32, 32, false, Math.PI/6, 0, 19, -20);
     topo_grua.add(conjunto_carrinho)
-    topo_grua.position.set(0, 85, 0);
+    topo_grua.position.set(0, 87.5, 0);
     scene.add(topo_grua);
 }
 
@@ -171,7 +171,7 @@ function createBaseGrua() {
     var base = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 30), base_material);
     base.position.set(0, 5, 0);
     var suporte = new THREE.Mesh(new THREE.BoxGeometry(20, 65, 20), suporte_material);
-    suporte.position.set(0, 40, 0);
+    suporte.position.set(0, 42.5, 0);
     base_grua.add(base);
     base_grua.add(suporte);
     scene.add(base_grua);
