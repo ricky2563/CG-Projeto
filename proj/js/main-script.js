@@ -157,7 +157,7 @@ function createTopoGrua() {
     materials.push(porta_lança_material);
     createTetrahedron(topo_grua, vertices, 0, 4, 0, porta_lança_material);
     createTirant(topo_grua, 0.5, 0.5, 56, 32, 32, false, -Math.PI/2.9, 0, 27, 17);
-    createTirant(topo_grua, 0.5, 0.5, 39, 32, 32, false, Math.PI/6, 0, 23, -20);
+    createTirant(topo_grua, 0.5, 0.5, 42.5, 32, 32, false, Math.PI/6, 0, 22.5, -21);
     topo_grua.add(conjunto_carrinho)
     topo_grua.position.set(0, 85, 0);
     scene.add(topo_grua);
