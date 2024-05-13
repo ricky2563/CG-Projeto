@@ -9,7 +9,8 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 //////////////////////
 
 var camera, scene, renderer, stereoCamera;
-
+var moveAnelGrande = false, moveAnelPequeno = false, moveAnelMedio = false;
+var currentShading = 'Gouraud';
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
@@ -145,9 +146,49 @@ function onResize() {
 ///////////////////////
 /* KEY DOWN CALLBACK */
 ///////////////////////
-function onKeyDown(e) {
-    'use strict';
+function onKeyDown(event) {
+    switch (event.keyCode) {
 
+        case 81: //Q
+        case 113: //q
+            currentShading = 'Gouraud';
+            break;
+
+        case 87: //w
+        case 119: //W
+            currentShading = 'Phong';
+            break;
+        
+        case 69: //E
+        case 101: //e
+            currentShading = 'Cartoon';
+            break;
+
+        case 82: //R
+        case 114: //r
+            currentShading = 'NormalMap';
+            break;
+
+        case 49: // Tecla '1' - Anel grande
+            if (!activeKeys.includes('1')){
+                activeKeys.push('1');
+            }
+            moveAnelGrande = true;
+            break;
+        case 50: // Tecla '2' - Anel médio
+            if (!activeKeys.includes('2')){
+                activeKeys.push('2');
+            }
+            moveAnelMedio = true;
+            break;
+        case 51: // Tecla '3' - Anel pequeno
+            if (!activeKeys.includes('3')){
+                activeKeys.push('3');
+            }
+            moveAnelPequeno = true;
+            break;
+        
+    }
 }
 
 ///////////////////////
@@ -155,6 +196,23 @@ function onKeyDown(e) {
 ///////////////////////
 function onKeyUp(e){
     'use strict';
+    switch (e.keyCode) {
+        case 49: //1
+            activeKeys.splice(activeKeys.indexOf('1'), 1);
+            moveAnelGrande = false;
+            break;
+        case 50: //2
+            activeKeys.splice(activeKeys.indexOf('2'), 1);
+            moveAnelMedio = false;
+            break;
+        case 51: //3
+            activeKeys.splice(activeKeys.indexOf('3'), 1);
+            moveAnelPequeno = false;
+        break;
+
+        
+    }
+
 }
 
 init();
