@@ -25,7 +25,7 @@ var boundingBoxGarra, boundingBoxes = [];
 var cabineDireita = false, cabineEsquerda = false, carrinhoIn = false, carrinhoOut = false, 
     garraAbre, garraFecha = false, garraDesce = false, garraSobe = false, colisao = false;
 
-var activeKeys = [], currentCamera = '5';
+var activeKeys = [], activeKeysCamera = [], currentCamera = '5';
 
 var materials = [];
 
@@ -191,27 +191,6 @@ function createGrua() {
 
 
 function createCargas() {
-        // Posição do contentor
-    /*
-    
-    // Posição da base da grua
-    var baseGruaPosX = 0;
-    var baseGruaPosY = 5;
-    var baseGruaPosZ = 0;
-    var baseGruaHalfWidth = 10; // Metade da largura da base da grua
-    var baseGruaHalfDepth = 15; // Metade da profundidade da base da grua
-
-    // Definir os limites da área onde as cargas podem aparecer aleatoriamente
-    var minX = -67 + contentorHalfWidth; // limite inferior carrinho + metade da largura do contentor
-    var maxX = 67 - contentorHalfWidth; // limite superior carrinho - metade da largura do contentor
-    var minZ = -67 + contentorHalfDepth; // limite inferior carrinho + metade da profundidade do contentor
-    var maxZ = 67 - contentorHalfDepth; // limite superior carrinho - metade da profundidade do contentor
-
-    // Definir os limites da área onde as cargas não podem aparecer na base da grua
-    var baseMinX = baseGruaPosX - baseGruaHalfWidth; // limite inferior base grua
-    var baseMaxX = baseGruaPosX + baseGruaHalfWidth; // limite superior base grua
-    var baseMinZ = baseGruaPosZ - baseGruaHalfDepth; // limite inferior base grua
-    var baseMaxZ = baseGruaPosZ + baseGruaHalfDepth; // limite superior base grua*/
     
     var contentorHalfWidth = 15; // Metade da largura do contentor
     var contentorHalfDepth = 15; // Metade da profundidade do contentor
@@ -227,7 +206,7 @@ function createCargas() {
     for (var i = 0; i < 10; i++) {
         var randomX, randomZ;
 
-        // Garantir que as coordenadas não estejam dentro dos limites do contentor e fora da base da grua
+        // Garantir que as coordenadas não estejam dentro dos limites do contentor e da base da grua
         do {
             randomX = THREE.MathUtils.randFloat(minX, maxX);
             randomZ = THREE.MathUtils.randFloat(minZ, maxZ);
@@ -240,7 +219,7 @@ function createCargas() {
         var carga;
         var size;
 
-        // Escolher uma forma geométrica aleatória para cada carga
+        // Criar 2 cargas de cada tipo
         switch (i) {
             case 0:
             case 1:
@@ -276,16 +255,16 @@ function createCargas() {
 
         carga = new THREE.Mesh(cargaGeometry, cargaMaterial);
 
-        var boundingBox = new THREE.Box3().setFromObject(carga);
+        var boundingBoxCarga = new THREE.Box3().setFromObject(carga);
 
-        var height = boundingBox.max.y - boundingBox.min.y;
+        var height = boundingBoxCarga.max.y - boundingBoxCarga.min.y;
 
         carga.position.set(randomX, height/2, randomZ);
         carga.userData = { movingUp: false, movingForward: false, movingDown: false, movingLeft: false, movingBackUp: false, movingBackwards: false, movingRight: false };
         scene.add(carga);
         cargas.push(carga);
 
-        boundingBoxes.push(boundingBox);
+        boundingBoxes.push(boundingBoxCarga);
     }
     
 }
@@ -794,56 +773,32 @@ function onKeyDown(event) {
         case 49: // Tecla '1' - Câmera frontal
             renderer.render(scene, cameraFrontal);
             camera = cameraFrontal;
-            if (!activeKeys.includes('1')){
-                activeKeys.splice(activeKeys.indexOf(currentCamera), 1);
-                activeKeys.push('1');
-                currentCamera = '1';
-            }
+            currentCamera = '1';
             break;
         case 50: // Tecla '2' - Câmera lateral
             renderer.render(scene, cameraLateral);
             camera = cameraLateral;
-            if (!activeKeys.includes('2')){
-                activeKeys.splice(activeKeys.indexOf(currentCamera), 1);
-                activeKeys.push('2');
-                currentCamera = '2';
-            }
+            currentCamera = '2';
             break;
         case 51: // Tecla '3' - Câmera topo
             renderer.render(scene, cameraTopo);
             camera = cameraTopo;
-            if (!activeKeys.includes('3')){
-                activeKeys.splice(activeKeys.indexOf(currentCamera), 1);
-                activeKeys.push('3');
-                currentCamera = '3';
-            }
+            currentCamera = '3';
             break;
         case 52: // Tecla '4' - Câmera fixa ortogonal
             renderer.render(scene, cameraFixaOrtogonal);
             camera = cameraFixaOrtogonal;
-            if (!activeKeys.includes('4')){
-                activeKeys.splice(activeKeys.indexOf(currentCamera), 1);
-                activeKeys.push('4');
-                currentCamera = '4';
-            }
+            currentCamera = '4';
             break;
         case 53: // Tecla '5' - Câmera fixa perspectiva
             renderer.render(scene, cameraFixaPerspectiva);
             camera = cameraFixaPerspectiva;
-            if (!activeKeys.includes('5')){
-                activeKeys.splice(activeKeys.indexOf(currentCamera), 1);
-                activeKeys.push('5');
-                currentCamera = '5';
-            }
+            currentCamera = '5';
             break;
         case 54: // Tecla '6' - Câmera móvel perspectiva
             renderer.render(scene, cameraMovelPerspectiva);
             camera = cameraMovelPerspectiva;
-            if (!activeKeys.includes('6')){
-                activeKeys.splice(activeKeys.indexOf(currentCamera), 1);
-                activeKeys.push('6');
-                currentCamera = '6';
-            }
+            currentCamera = '6';
             break;
         case 69: //E
         case 101: //e
@@ -970,9 +925,15 @@ var hudKeysText = document.createElement('div');
 hudKeysText.textContent = 'Teclas ativas: Nenhuma';
 addHUDElement(hudKeysText);
 
+var hudCameraText = document.createElement('div');
+hudCameraText.textContent = 'Câmera ativa: ' + currentCamera;
+addHUDElement(hudCameraText);
+
 function updateHUDKeysText(activeKeys) {
     hudKeysText.textContent = 'Teclas ativas: ' + activeKeys.join(', ');
+    hudCameraText.textContent = 'Câmera ativa: ' + currentCamera;
 }
+
 
 init();
 
