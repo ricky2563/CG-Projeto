@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import * as Stats from 'three/addons/libs/stats.module.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-
+import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
@@ -130,11 +130,44 @@ function checkCollisions(){
 }
 
 ///////////////////////
-/* HANDLE COLLISIONS */
+/* ANIMAÇÃO */
 ///////////////////////
-function handleCollisions(){
+function moveRings(){
     'use strict';
-    
+    var anelgrandePosicaoRelativa = new THREE.Vector3();
+    anelGrande.getWorldPosition(anelgrandePosicaoRelativa);
+    if (moveAnelGrande) {
+        if(anelgrandePosicaoRelativa.y >=35){
+            anelGrande.userData.movingDown = true;
+            anelGrande.userData.movingUp = false;
+        } else {
+            anelGrande.userData.movingDown = false;
+            anelGrande.userData.movingUp = true;
+        }
+    }
+    var anelmedioPosicaoRelativa = new THREE.Vector3();
+    anelMedio.getWorldPosition(anelmedioPosicaoRelativa);
+    if (moveAnelMedio) {
+        if(anelmedioPosicaoRelativa.y >=35){
+            anelMedio.userData.movingDown = true;
+            anelMedio.userData.movingUp = false;
+        } else {
+            anelMedio.userData.movingDown = false;
+            anelMedio.userData.movingUp = true;
+        }
+    }
+    var anelpequenoPosicaoRelativa = new THREE.Vector3();
+    anelPequeno.getWorldPosition(anelpequenoPosicaoRelativa);
+    if (moveAnelPequeno) {
+        console.log(anelpequenoPosicaoRelativa.y)
+        if(anelpequenoPosicaoRelativa.y >=35){
+            anelPequeno.userData.movingUp = false;
+            anelPequeno.userData.movingDown = true;
+        } else {
+            anelPequeno.userData.movingDown = false;
+            anelPequeno.userData.movingUp = true;
+        }
+    }
 }
 
 ////////////
@@ -142,11 +175,37 @@ function handleCollisions(){
 ////////////
 function update(){
     'use strict';
-    if(moveAnelGrande){
-        var translationVector = new THREE.Vector3(0, 0.5, 0);
+    if(anelGrande.userData.movingUp == true){
+        var translationVector = new THREE.Vector3(0, 0.25, 0);
         translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelGrande.rotation.y);
         anelGrande.position.add(translationVector);
     }
+    if(anelGrande.userData.movingDown == true){
+        var translationVector = new THREE.Vector3(0, -0.25, 0);
+        translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelGrande.rotation.y);
+        anelGrande.position.add(translationVector);
+    }
+    if(anelMedio.userData.movingUp == true){
+        var translationVector = new THREE.Vector3(0, 0.25, 0);
+        translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelMedio.rotation.y);
+        anelMedio.position.add(translationVector);
+    }
+    if(anelMedio.userData.movingDown == true){
+        var translationVector = new THREE.Vector3(0, -0.25, 0);
+        translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelMedio.rotation.y);
+        anelMedio.position.add(translationVector);
+    }
+    if(anelPequeno.userData.movingUp == true){
+        var translationVector = new THREE.Vector3(0, 0.25, 0);
+        translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelPequeno.rotation.y);
+        anelPequeno.position.add(translationVector);
+    }
+    if(anelPequeno.userData.movingDown == true){
+        var translationVector = new THREE.Vector3(0, -0.25, 0);
+        translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelPequeno.rotation.y);
+        anelPequeno.position.add(translationVector);
+    }
+    moveRings();
 }
 
 function updateStereoCamera(){
