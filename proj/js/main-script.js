@@ -11,6 +11,8 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 var camera, scene, renderer, stereoCamera;
 var moveAnelGrande = false, moveAnelPequeno = false, moveAnelMedio = false;
 var currentShading = 'Gouraud';
+var directionalLightOn = true;
+var directionalLight
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
@@ -22,11 +24,27 @@ function createScene(){
     scene.add(new THREE.AxesHelper(10));
     scene.background = new THREE.Color(0xf6f6ff);
 
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const geometry = new THREE.BoxGeometry(5,5,5);
+    const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const cube = new THREE.Mesh(geometry, material);
+    createSkydome()
     scene.add(cube);
 
+}
+
+function createSkydome(){
+    const skyGeometry = new THREE.SphereGeometry(20, 32, 32, Math.PI/ 2, Math.PI);    
+    const outsideMaterial = new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
+        side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
+    });
+    
+    
+    // Create a mesh with the skydome geometry and multi-material
+    const skyDome = new THREE.Mesh(skyGeometry, outsideMaterial);
+    skyDome.rotation.z = Math.PI / 2; 
+    skyDome.position.y = 0;
+    scene.add(skyDome);
 }
 
 //////////////////////
@@ -37,7 +55,8 @@ function createCamera(){
     stereoCamera = new THREE.StereoCamera();
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 5; // Set the camera position
+    camera.position.set(50, 30, 50);
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 }
 
@@ -45,6 +64,15 @@ function createCamera(){
 /////////////////////
 /* CREATE LIGHT(S) */
 /////////////////////
+function create_Lights(){
+    var ambientLight = new THREE.AmbientLight(0xffa500, 0.2); // Tom alaranjado
+    scene.add(ambientLight);
+    directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(-50, 50, 50)
+    directionalLight.target.position.set(0, 0, 0);
+    scene.add(directionalLight);
+    directionalLightOn = true;
+}
 
 ////////////////////////
 /* CREATE OBJECT3D(S) */
@@ -89,13 +117,6 @@ function render() {
     // Clear the previous rendering
     renderer.clear();
 
-    // Render the left eye
-    renderer.setViewport(0, 0, window.innerWidth / 2, window.innerHeight);
-    renderer.render(scene, stereoCamera.cameraL);
-
-    // Render the right eye
-    renderer.setViewport(window.innerWidth / 2, 0, window.innerWidth / 2, window.innerHeight);
-    renderer.render(scene, stereoCamera.cameraR);
 }
 
 
@@ -109,6 +130,7 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     createScene();
+    create_Lights();
     createCamera();
 
     window.addEventListener("resize", onResize);
@@ -154,6 +176,11 @@ function onKeyDown(event) {
             currentShading = 'Gouraud';
             break;
 
+        case 68: //D
+        case 100: //d
+            directionalLightOn = !directionalLightOn;
+            directionalLight.visible = directionalLightOn;
+            break;  
         case 87: //w
         case 119: //W
             currentShading = 'Phong';
