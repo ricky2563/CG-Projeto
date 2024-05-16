@@ -13,6 +13,9 @@ var moveAnelGrande = false, moveAnelPequeno = false, moveAnelMedio = false;
 var currentShading = 'Gouraud';
 var directionalLightOn = true;
 var directionalLight
+var cilindro, anelGrande, anelMedio, anelPequeno;
+
+
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
@@ -24,12 +27,9 @@ function createScene(){
     scene.add(new THREE.AxesHelper(10));
     scene.background = new THREE.Color(0xf6f6ff);
 
-    const geometry = new THREE.BoxGeometry(5,5,5);
-    const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const cube = new THREE.Mesh(geometry, material);
-    createSkydome()
-    scene.add(cube);
-
+    createSkydome();
+    createCilindro();
+    createAneis();
 }
 
 function createSkydome(){
@@ -54,9 +54,15 @@ function createSkydome(){
 function createCamera(){
     stereoCamera = new THREE.StereoCamera();
 
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(50, 30, 50);
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
+    //camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    //camera.position.z = 5; // Set the camera position
+
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+    camera.position.x = 500;
+    camera.position.y = 500;
+    camera.position.z = 500;    
+    camera.lookAt(scene.position);
+    scene.add(camera);
 
 }
 
@@ -77,6 +83,39 @@ function create_Lights(){
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
+
+function createCilindro() {
+    var cilindro_material = new THREE.MeshBasicMaterial({ color: 0xff6666 });
+    cilindro = new THREE.Mesh(new THREE.CylinderGeometry(25, 25, 300, 100), cilindro_material);
+
+    cilindro.position.set(0, 0, 0);
+    
+    scene.add(cilindro);
+}
+
+function createAneis() {
+    var anel_material = new THREE.MeshBasicMaterial({ color: 0xff9933 });
+    anelGrande = new THREE.Mesh(new THREE.RingGeometry(75, 100, 64, 20, 0, 2*Math.PI), anel_material);
+    anel_material = new THREE.MeshBasicMaterial({ color: 0x0099ff });
+    anelMedio = new THREE.Mesh(new THREE.RingGeometry(50, 75, 64, 1, 0, 2*Math.PI), anel_material);
+    anel_material = new THREE.MeshBasicMaterial({ color: 0x99ff99 });
+    anelPequeno = new THREE.Mesh(new THREE.RingGeometry(25, 50, 64, 1, 0, 2*Math.PI), anel_material);
+
+    
+    
+    anelGrande.rotation.x = Math.PI / 2;
+    anelMedio.rotation.x = Math.PI / 2;
+    anelPequeno.rotation.x = Math.PI / 2;
+
+    anelGrande.position.set(0, 10, 0);
+    anelMedio.position.set(0, 10, 0);
+    anelPequeno.position.set(0, 10, 0);
+
+
+    scene.add(anelGrande);
+    scene.add(anelMedio);
+    scene.add(anelPequeno);
+}
 
 //////////////////////
 /* CHECK COLLISIONS */
