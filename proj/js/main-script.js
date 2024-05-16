@@ -15,7 +15,7 @@ var directionalLightOn = true;
 var directionalLight;
 var cilindro,  anelMedio, anelPequeno;
 var directionalLight
-var cilindro, anelGrande, anelMedio, anelPequeno;
+var cilindro, anelGrande = new THREE.Object3D(), anelMedio = new THREE.Object3D(), anelPequeno = new THREE.Object3D();
 var activeKeys = []
 var materials = [];
 
@@ -36,7 +36,7 @@ function createScene(){
 }
 
 function createSkydome(){
-    const skyGeometry = new THREE.SphereGeometry(40, 32, 32, Math.PI/ 2, Math.PI);    
+    const skyGeometry = new THREE.SphereGeometry(45, 32, 32, Math.PI/ 2, Math.PI);    
     const outsideMaterial = new THREE.MeshPhongMaterial({
         map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
         side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
@@ -95,7 +95,7 @@ function create_Lights(){
 function createCilindro() {
     var cilindro_material = new THREE.MeshPhongMaterial({ color: 0xff6666 });
     materials.push(cilindro_material);
-    cilindro = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 20, 100), cilindro_material);
+    cilindro = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 40, 100), cilindro_material);
 
     cilindro.position.set(0, 20, 0);
     
@@ -122,9 +122,11 @@ function createAneis() {
     anelPequeno.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
     anelGrande.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
 
-    anelGrande.userData = {movingUp: false, movingDown: false};
-    anelMedio.userData = {movingUp: false, movingDown: false};
-    anelPequeno.userData = {movingUp: false, movingDown: false};
+    /*movingUp inicializado a true para quando o botão de mover o anel
+    for pressionada ele começar a subir */
+    anelGrande.userData = {movingUp: true, movingDown: false};
+    anelMedio.userData = {movingUp: true, movingDown: false};
+    anelPequeno.userData = {movingUp: true, movingDown: false};
 
     scene.add(anelGrande);
     scene.add(anelMedio);
@@ -142,83 +144,61 @@ function checkCollisions(){
 ///////////////////////
 /* ANIMAÇÃO */
 ///////////////////////
-function moveRings(){
-    'use strict';
-    var anelgrandePosicaoRelativa = new THREE.Vector3();
-    anelGrande.getWorldPosition(anelgrandePosicaoRelativa);
-    if (moveAnelGrande) {
-        if(anelgrandePosicaoRelativa.y >=35){
-            anelGrande.userData.movingDown = true;
-            anelGrande.userData.movingUp = false;
-        } else {
-            anelGrande.userData.movingDown = false;
-            anelGrande.userData.movingUp = true;
-        }
-    }
-    var anelmedioPosicaoRelativa = new THREE.Vector3();
-    anelMedio.getWorldPosition(anelmedioPosicaoRelativa);
-    if (moveAnelMedio) {
-        if(anelmedioPosicaoRelativa.y >=35){
-            anelMedio.userData.movingDown = true;
-            anelMedio.userData.movingUp = false;
-        } else {
-            anelMedio.userData.movingDown = false;
-            anelMedio.userData.movingUp = true;
-        }
-    }
-    var anelpequenoPosicaoRelativa = new THREE.Vector3();
-    anelPequeno.getWorldPosition(anelpequenoPosicaoRelativa);
-    if (moveAnelPequeno) {
-        console.log(anelpequenoPosicaoRelativa.y)
-        if(anelpequenoPosicaoRelativa.y >=35){
-            anelPequeno.userData.movingUp = false;
-            anelPequeno.userData.movingDown = true;
-        } else {
-            anelPequeno.userData.movingDown = false;
-            anelPequeno.userData.movingUp = true;
-        }
-    }
-}
+
 
 ////////////
 /* UPDATE */
 ////////////
 function update(){
     'use strict';
-    if(anelGrande.userData.movingUp == true){
-        var translationVector = new THREE.Vector3(0, 0.25, 0);
-        translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelGrande.rotation.y);
-        anelGrande.position.add(translationVector);
-    }
-    if(anelGrande.userData.movingDown == true){
-        var translationVector = new THREE.Vector3(0, -0.25, 0);
-    }
     if(moveAnelGrande){
-        var translationVector = new THREE.Vector3(0, 0.5, 0);
-        translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelGrande.rotation.y);
-        anelGrande.position.add(translationVector);
+        if(anelGrande.userData.movingUp){
+            anelGrande.position.y += 0.25;
+            if(anelGrande.position.y >= 37){
+                anelGrande.userData.movingUp = false;
+                anelGrande.userData.movingDown = true;
+            }
+        }
+        if(anelGrande.userData.movingDown){
+            anelGrande.position.y -= 0.25;
+            if(anelGrande.position.y <= 3){
+                anelGrande.userData.movingUp = true;
+                anelGrande.userData.movingDown = false;
+            }
+        }
     }
-    if(anelMedio.userData.movingUp == true){
-        var translationVector = new THREE.Vector3(0, 0.25, 0);
-        translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelMedio.rotation.y);
-        anelMedio.position.add(translationVector);
+    if(moveAnelMedio){
+        if(anelMedio.userData.movingUp){
+            anelMedio.position.y += 0.25;
+            if(anelMedio.position.y >= 37){
+                anelMedio.userData.movingUp = false;
+                anelMedio.userData.movingDown = true;
+            }
+        }
+        if(anelMedio.userData.movingDown){
+            anelMedio.position.y -= 0.25;
+            if(anelMedio.position.y <= 3){
+                anelMedio.userData.movingUp = true;
+                anelMedio.userData.movingDown = false;
+            }
+        }
     }
-    if(anelMedio.userData.movingDown == true){
-        var translationVector = new THREE.Vector3(0, -0.25, 0);
-        translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelMedio.rotation.y);
-        anelMedio.position.add(translationVector);
+    if(moveAnelPequeno){
+        if(anelPequeno.userData.movingUp){
+            anelPequeno.position.y += 0.25;
+            if(anelPequeno.position.y >= 37){
+                anelPequeno.userData.movingUp = false;
+                anelPequeno.userData.movingDown = true;
+            }
+        }
+        if(anelPequeno.userData.movingDown == true){
+            anelPequeno.position.y -= 0.25;
+            if(anelPequeno.position.y <= 3){
+                anelPequeno.userData.movingUp = true;
+                anelPequeno.userData.movingDown = false;
+            }
+        }
     }
-    if(anelPequeno.userData.movingUp == true){
-        var translationVector = new THREE.Vector3(0, 0.25, 0);
-        translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelPequeno.rotation.y);
-        anelPequeno.position.add(translationVector);
-    }
-    if(anelPequeno.userData.movingDown == true){
-        var translationVector = new THREE.Vector3(0, -0.25, 0);
-        translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelPequeno.rotation.y);
-        anelPequeno.position.add(translationVector);
-    }
-    moveRings();
     // CHANGE LIGHTS
     directionalLight.visible = directionalLightOn;
 }
@@ -266,8 +246,8 @@ function animate() {
     'use strict';
     render();
 
-    requestAnimationFrame(animate);
     update();
+    requestAnimationFrame(animate);
 
     renderer.render(scene, camera);
 }
