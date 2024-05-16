@@ -12,9 +12,12 @@ var camera, scene, renderer, stereoCamera;
 var moveAnelGrande = false, moveAnelPequeno = false, moveAnelMedio = false;
 var currentShading = 'Gouraud';
 var directionalLightOn = true;
+var directionalLight;
+var cilindro,  anelMedio, anelPequeno;
 var directionalLight
 var cilindro, anelGrande, anelMedio, anelPequeno;
 var activeKeys = []
+var materials = [];
 
 
 /////////////////////
@@ -26,15 +29,15 @@ function createScene(){
     scene = new THREE.Scene();
 
     scene.add(new THREE.AxesHelper(10));
-    scene.background = new THREE.Color(0xf6f6ff);
+    scene.background = new THREE.Color(0x000000);
     createSkydome();
     createCilindro();
     createAneis();
 }
 
 function createSkydome(){
-    const skyGeometry = new THREE.SphereGeometry(20, 32, 32, Math.PI/ 2, Math.PI);    
-    const outsideMaterial = new THREE.MeshBasicMaterial({
+    const skyGeometry = new THREE.SphereGeometry(40, 32, 32, Math.PI/ 2, Math.PI);    
+    const outsideMaterial = new THREE.MeshPhongMaterial({
         map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
         side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
     });
@@ -43,7 +46,7 @@ function createSkydome(){
     // Create a mesh with the skydome geometry and multi-material
     const skyDome = new THREE.Mesh(skyGeometry, outsideMaterial);
     skyDome.rotation.z = Math.PI / 2; 
-    skyDome.position.y = 22;
+    skyDome.position.y = 0;
     scene.add(skyDome);
 }
 
@@ -53,6 +56,10 @@ function createSkydome(){
 
 function createCamera(){
     stereoCamera = new THREE.StereoCamera();
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(20, 30, 20);
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     //camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     //camera.position.z = 5; // Set the camera position
@@ -71,11 +78,12 @@ function createCamera(){
 /* CREATE LIGHT(S) */
 /////////////////////
 function create_Lights(){
-    var ambientLight = new THREE.AmbientLight(0xffa500, 0.2); // Tom alaranjado
+    var ambientLight = new THREE.AmbientLight(0xffa500, 3); // Tom alaranjado
     scene.add(ambientLight);
     directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(-50, 50, 50)
+    directionalLight.position.set(0, 12, 0)
     directionalLight.target.position.set(0, 0, 0);
+    // light axes helper
     scene.add(directionalLight);
     directionalLightOn = true;
 }
@@ -85,8 +93,9 @@ function create_Lights(){
 ////////////////////////
 
 function createCilindro() {
-    var cilindro_material = new THREE.MeshBasicMaterial({ color: 0xff6666 });
-    cilindro = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 40, 100), cilindro_material);
+    var cilindro_material = new THREE.MeshPhongMaterial({ color: 0xff6666 });
+    materials.push(cilindro_material);
+    cilindro = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 20, 100), cilindro_material);
 
     cilindro.position.set(0, 20, 0);
     
@@ -94,13 +103,14 @@ function createCilindro() {
 }
 
 function createAneis() {
-    var anel_material = new THREE.MeshBasicMaterial({ color: 0xff9933, side: THREE.DoubleSide });
-    anelGrande = new THREE.Mesh(new THREE.RingGeometry(15, 20, 64, 20, 0, 2*Math.PI), anel_material);
-    anel_material = new THREE.MeshBasicMaterial({ color: 0x0099ff , side: THREE.DoubleSide});
-    anelMedio = new THREE.Mesh(new THREE.RingGeometry(10, 15, 64, 20, 0, 2*Math.PI), anel_material);
-    anel_material = new THREE.MeshBasicMaterial({ color: 0x99ff99 , side: THREE.DoubleSide});
-    anelPequeno = new THREE.Mesh(new THREE.RingGeometry(5, 10, 64, 20, 0, 2*Math.PI), anel_material);
 
+    var anel_material = new THREE.MeshPhongMaterial({ color: 0xff9933, side: THREE.DoubleSide });
+    anelGrande = new THREE.Mesh(new THREE.RingGeometry(15, 20, 64, 20, 0, 2*Math.PI), anel_material);
+    anel_material = new THREE.MeshPhongMaterial({ color: 0x0099ff , side: THREE.DoubleSide});
+    anelMedio = new THREE.Mesh(new THREE.RingGeometry(10, 15, 64, 20, 0, 2*Math.PI), anel_material);
+    anel_material = new THREE.MeshPhongMaterial({ color: 0x99ff99 , side: THREE.DoubleSide});
+    anelPequeno = new THREE.Mesh(new THREE.RingGeometry(5, 10, 64, 20, 0, 2*Math.PI), anel_material);
+    materials.push(anel_material);
 
     anelGrande.position.set(0, 5, 0);
     anelMedio.position.set(0, 25, 0);
@@ -182,6 +192,9 @@ function update(){
     }
     if(anelGrande.userData.movingDown == true){
         var translationVector = new THREE.Vector3(0, -0.25, 0);
+    }
+    if(moveAnelGrande){
+        var translationVector = new THREE.Vector3(0, 0.5, 0);
         translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelGrande.rotation.y);
         anelGrande.position.add(translationVector);
     }
@@ -206,6 +219,8 @@ function update(){
         anelPequeno.position.add(translationVector);
     }
     moveRings();
+    // CHANGE LIGHTS
+    directionalLight.visible = directionalLightOn;
 }
 
 function updateStereoCamera(){
@@ -255,7 +270,6 @@ function animate() {
     update();
 
     renderer.render(scene, camera);
-    renderer.autoClear = false;
 }
 
 ////////////////////////////
@@ -285,7 +299,6 @@ function onKeyDown(event) {
         case 68: //D
         case 100: //d
             directionalLightOn = !directionalLightOn;
-            directionalLight.visible = directionalLightOn;
             break;  
         case 87: //w
         case 119: //W
