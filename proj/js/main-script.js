@@ -14,6 +14,7 @@ var currentShading = 'Gouraud';
 var directionalLightOn = true;
 var directionalLight
 var cilindro, anelGrande, anelMedio, anelPequeno;
+var activeKeys = []
 
 
 /////////////////////
@@ -26,7 +27,6 @@ function createScene(){
 
     scene.add(new THREE.AxesHelper(10));
     scene.background = new THREE.Color(0xf6f6ff);
-
     createSkydome();
     createCilindro();
     createAneis();
@@ -43,7 +43,7 @@ function createSkydome(){
     // Create a mesh with the skydome geometry and multi-material
     const skyDome = new THREE.Mesh(skyGeometry, outsideMaterial);
     skyDome.rotation.z = Math.PI / 2; 
-    skyDome.position.y = 0;
+    skyDome.position.y = 22;
     scene.add(skyDome);
 }
 
@@ -58,9 +58,9 @@ function createCamera(){
     //camera.position.z = 5; // Set the camera position
 
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.x = 500;
-    camera.position.y = 500;
-    camera.position.z = 500;    
+    camera.position.x = 50;
+    camera.position.y = 50;
+    camera.position.z = 50;    
     camera.lookAt(scene.position);
     scene.add(camera);
 
@@ -86,31 +86,35 @@ function create_Lights(){
 
 function createCilindro() {
     var cilindro_material = new THREE.MeshBasicMaterial({ color: 0xff6666 });
-    cilindro = new THREE.Mesh(new THREE.CylinderGeometry(25, 25, 300, 100), cilindro_material);
+    cilindro = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 40, 100), cilindro_material);
 
-    cilindro.position.set(0, 0, 0);
+    cilindro.position.set(0, 20, 0);
     
     scene.add(cilindro);
 }
 
 function createAneis() {
-    var anel_material = new THREE.MeshBasicMaterial({ color: 0xff9933 });
-    anelGrande = new THREE.Mesh(new THREE.RingGeometry(75, 100, 64, 20, 0, 2*Math.PI), anel_material);
-    anel_material = new THREE.MeshBasicMaterial({ color: 0x0099ff });
-    anelMedio = new THREE.Mesh(new THREE.RingGeometry(50, 75, 64, 1, 0, 2*Math.PI), anel_material);
-    anel_material = new THREE.MeshBasicMaterial({ color: 0x99ff99 });
-    anelPequeno = new THREE.Mesh(new THREE.RingGeometry(25, 50, 64, 1, 0, 2*Math.PI), anel_material);
+    var anel_material = new THREE.MeshBasicMaterial({ color: 0xff9933, side: THREE.DoubleSide });
+    anelGrande = new THREE.Mesh(new THREE.RingGeometry(15, 20, 64, 20, 0, 2*Math.PI), anel_material);
+    anel_material = new THREE.MeshBasicMaterial({ color: 0x0099ff , side: THREE.DoubleSide});
+    anelMedio = new THREE.Mesh(new THREE.RingGeometry(10, 15, 64, 20, 0, 2*Math.PI), anel_material);
+    anel_material = new THREE.MeshBasicMaterial({ color: 0x99ff99 , side: THREE.DoubleSide});
+    anelPequeno = new THREE.Mesh(new THREE.RingGeometry(5, 10, 64, 20, 0, 2*Math.PI), anel_material);
 
+
+    anelGrande.position.set(0, 5, 0);
+    anelMedio.position.set(0, 25, 0);
+    anelPequeno.position.set(0, 15, 0);
     
     
-    anelGrande.rotation.x = Math.PI / 2;
-    anelMedio.rotation.x = Math.PI / 2;
-    anelPequeno.rotation.x = Math.PI / 2;
+     
+    anelMedio.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    anelPequeno.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    anelGrande.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
 
-    anelGrande.position.set(0, 10, 0);
-    anelMedio.position.set(0, 10, 0);
-    anelPequeno.position.set(0, 10, 0);
-
+    anelGrande.userData = {movingUp: false, movingDown: false};
+    anelMedio.userData = {movingUp: false, movingDown: false};
+    anelPequeno.userData = {movingUp: false, movingDown: false};
 
     scene.add(anelGrande);
     scene.add(anelMedio);
@@ -130,7 +134,7 @@ function checkCollisions(){
 ///////////////////////
 function handleCollisions(){
     'use strict';
-
+    
 }
 
 ////////////
@@ -138,7 +142,11 @@ function handleCollisions(){
 ////////////
 function update(){
     'use strict';
-
+    if(moveAnelGrande){
+        var translationVector = new THREE.Vector3(0, 0.5, 0);
+        translationVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), anelGrande.rotation.y);
+        anelGrande.position.add(translationVector);
+    }
 }
 
 function updateStereoCamera(){
