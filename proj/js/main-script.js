@@ -11,12 +11,11 @@ import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.j
 var camera, scene, renderer, stereoCamera;
 var moveAnelGrande = false, moveAnelPequeno = false, moveAnelMedio = false;
 var currentShading = 'Gouraud';
-var directionalLightOn = true;
-var directionalLight;
-var cilindro,  anelMedio, anelPequeno;
+var directionalLightOn = true, lightsOn = [], pontualLights = [];
+var faixaMobius;
 var directionalLight
 var cilindro, anelGrande = new THREE.Object3D(), anelMedio = new THREE.Object3D(), anelPequeno = new THREE.Object3D();
-var activeKeys = []
+var activeKeys = [];
 var materials = [];
 
 
@@ -33,6 +32,7 @@ function createScene(){
     createSkydome();
     createCilindro();
     createAneis();
+    createFaixaMobius();
 }
 
 function createSkydome(){
@@ -86,6 +86,22 @@ function create_Lights(){
     // light axes helper
     scene.add(directionalLight);
     directionalLightOn = true;
+
+    const lightColor = 0xffffff;
+    const lightIntensity = 1;
+    const lightRadius = 15; // Raio em que as luzes serão distribuídas
+
+    for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const x = lightRadius * Math.cos(angle);
+        const z = lightRadius * Math.sin(angle);
+        const light = new THREE.PointLight(lightColor, lightIntensity);
+        light.position.set(x, 41, z); // Colocar as luzes na mesma altura da faixa
+        light.lookAt(faixaMobius.position); // Apontar para a faixa
+        pontualLights.push(light);
+        lightsOn[i] = true;
+        scene.add(light);
+    }
 }
 
 ////////////////////////
@@ -132,6 +148,49 @@ function createAneis() {
     scene.add(anelMedio);
     scene.add(anelPequeno);
 }
+
+function createFaixaMobius() {
+    const mobiusGeometry = new THREE.BufferGeometry();
+    const vertices = [];
+    const indices = [];
+    const segments = 200;
+    const radius = 9, width = 6;
+
+    for (let i = 0; i <= segments; i++) {
+        const t = i / segments * Math.PI * 2;
+        const cosT = Math.cos(t);
+        const sinT = Math.sin(t);
+
+        for (let j = -1; j <= 1; j += 2) {
+            const u = j * width / 2;
+            const x = (radius + u * cosT / 2) * cosT;
+            const y = (radius + u * cosT / 2) * sinT;
+            const z = u * sinT / 2;
+
+            vertices.push(x, y, z);
+        }
+
+        if (i < segments) {
+            const k = i * 2;
+            indices.push(k, k + 1, k + 3);
+            indices.push(k, k + 2, k + 3);
+        }
+    }
+
+    mobiusGeometry.setIndex(indices);
+    mobiusGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    mobiusGeometry.computeVertexNormals();
+
+    // Criar e adicionar a faixa de Möbius
+    const materialMobius = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true });
+    faixaMobius = new THREE.Mesh(mobiusGeometry, materialMobius); 
+    faixaMobius.position.y = 41; 
+    faixaMobius.rotation.x = Math.PI/2; 
+    scene.add(faixaMobius);
+}
+
+
+
 
 //////////////////////
 /* CHECK COLLISIONS */
@@ -201,6 +260,10 @@ function update(){
     }
     // CHANGE LIGHTS
     directionalLight.visible = directionalLightOn;
+    for (let i = 0; i < 8; i++){
+        pontualLights[i].visible = lightsOn[i];
+        console.log("lights on: " + lightsOn[i]);
+    }
 }
 
 function updateStereoCamera(){
@@ -270,6 +333,13 @@ function onResize() {
 ///////////////////////
 function onKeyDown(event) {
     switch (event.keyCode) {
+
+        case 80: //P
+        case 112: //p
+            for (let i = 0; i < 8; i++){
+                lightsOn[i] = !lightsOn[i];
+            };
+            break;
 
         case 81: //Q
         case 113: //q
