@@ -16,7 +16,8 @@ var faixaMobius;
 var directionalLight
 var cilindro, anelGrande = new THREE.Object3D(), anelMedio = new THREE.Object3D(), anelPequeno = new THREE.Object3D();
 var activeKeys = [];
-var materials = [];
+var meshs = [];
+
 
 
 /////////////////////
@@ -37,14 +38,27 @@ function createScene(){
 
 function createSkydome(){
     const skyGeometry = new THREE.SphereGeometry(45, 32, 32, Math.PI/ 2, Math.PI);    
-    const outsideMaterial = new THREE.MeshPhongMaterial({
+    const skydomePhong = new THREE.MeshPhongMaterial({
+        map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
+        side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
+    });
+    const skydomeLambert = new THREE.MeshLambertMaterial({
+        map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
+        side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
+    });
+    const skydomeToon = new THREE.MeshToonMaterial({
+        map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
+        side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
+    });
+    const skydomeNormal = new THREE.MeshNormalMaterial({
         map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
         side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
     });
     
-    
     // Create a mesh with the skydome geometry and multi-material
-    const skyDome = new THREE.Mesh(skyGeometry, outsideMaterial);
+    var skyDome = new THREE.Mesh(skyGeometry, skydomeLambert);
+    skyDome.userData = {materials: [skydomeLambert, skydomePhong, skydomeToon, skydomeNormal]};
+    meshs.push(skyDome);
     skyDome.rotation.z = Math.PI / 2; 
     skyDome.position.y = 0;
     scene.add(skyDome);
@@ -109,9 +123,13 @@ function create_Lights(){
 ////////////////////////
 
 function createCilindro() {
-    var cilindro_material = new THREE.MeshPhongMaterial({ color: 0xff6666 });
-    materials.push(cilindro_material);
-    cilindro = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 40, 100), cilindro_material);
+    var materialLambert = new THREE.MeshLambertMaterial({ color: 0xff7800 });
+    var materialPhong = new THREE.MeshPhongMaterial({ color: 0xff7800 });
+    var materialToon = new THREE.MeshToonMaterial({ color: 0xff7800 });
+    var materialNormal = new THREE.MeshNormalMaterial();
+    cilindro = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 40, 100), materialLambert);
+    cilindro.userData = {materials: [materialLambert, materialPhong, materialToon, materialNormal]};
+    meshs.push(cilindro);
 
     cilindro.position.set(0, 20, 0);
     
@@ -119,14 +137,24 @@ function createCilindro() {
 }
 
 function createAneis() {
-
-    var anel_material = new THREE.MeshPhongMaterial({ color: 0xff9933, side: THREE.DoubleSide });
-    anelGrande = new THREE.Mesh(new THREE.RingGeometry(15, 20, 64, 20, 0, 2*Math.PI), anel_material);
-    anel_material = new THREE.MeshPhongMaterial({ color: 0x0099ff , side: THREE.DoubleSide});
-    anelMedio = new THREE.Mesh(new THREE.RingGeometry(10, 15, 64, 20, 0, 2*Math.PI), anel_material);
-    anel_material = new THREE.MeshPhongMaterial({ color: 0x99ff99 , side: THREE.DoubleSide});
-    anelPequeno = new THREE.Mesh(new THREE.RingGeometry(5, 10, 64, 20, 0, 2*Math.PI), anel_material);
-    materials.push(anel_material);
+    var anelGrandeLambert = new THREE.MeshLambertMaterial({ color: 0xff9933, side: THREE.DoubleSide });
+    var anelGrandePhong = new THREE.MeshPhongMaterial({ color: 0xff9933, side: THREE.DoubleSide });
+    var anelGrandeToon = new THREE.MeshToonMaterial({ color: 0xff9933, side: THREE.DoubleSide });
+    var anelGrandeNormal = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+    anelGrande = new THREE.Mesh(new THREE.RingGeometry(15, 20, 64, 20, 0, 2*Math.PI), anelGrandeLambert);
+    meshs.push(anelGrande);
+    var anelMedioLambert = new THREE.MeshLambertMaterial({ color: 0x0099ff, side: THREE.DoubleSide });
+    var anelMedioPhong = new THREE.MeshPhongMaterial({ color: 0x0099ff, side: THREE.DoubleSide });
+    var anelMedioToon = new THREE.MeshToonMaterial({ color: 0x0099ff, side: THREE.DoubleSide });
+    var anelMedioNormal = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+    anelMedio = new THREE.Mesh(new THREE.RingGeometry(10, 15, 64, 20, 0, 2*Math.PI), anelMedioLambert);
+    meshs.push(anelMedio);
+    var anelPequenoLambert = new THREE.MeshLambertMaterial({ color: 0x99ff99, side: THREE.DoubleSide });
+    var anelPequenoPhong = new THREE.MeshPhongMaterial({ color: 0x99ff99, side: THREE.DoubleSide });
+    var anelPequenoToon = new THREE.MeshToonMaterial({ color: 0x99ff99, side: THREE.DoubleSide });
+    var anelPequenoNormal = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+    anelPequeno = new THREE.Mesh(new THREE.RingGeometry(5, 10, 64, 20, 0, 2*Math.PI), anelPequenoLambert);
+    meshs.push(anelPequeno);
 
     anelGrande.position.set(0, 5, 0);
     anelMedio.position.set(0, 25, 0);
@@ -140,9 +168,9 @@ function createAneis() {
 
     /*movingUp inicializado a true para quando o botão de mover o anel
     for pressionada ele começar a subir */
-    anelGrande.userData = {movingUp: true, movingDown: false};
-    anelMedio.userData = {movingUp: true, movingDown: false};
-    anelPequeno.userData = {movingUp: true, movingDown: false};
+    anelGrande.userData = {movingUp: true, movingDown: false, materials: [anelGrandeLambert, anelGrandePhong, anelGrandeToon, anelGrandeNormal]};
+    anelMedio.userData = {movingUp: true, movingDown: false, materials: [anelMedioLambert, anelMedioPhong, anelMedioToon, anelMedioNormal]};
+    anelPequeno.userData = {movingUp: true, movingDown: false, materials: [anelPequenoLambert, anelPequenoPhong, anelPequenoToon, anelPequenoNormal]};
 
     scene.add(anelGrande);
     scene.add(anelMedio);
@@ -263,6 +291,24 @@ function update(){
     for (let i = 0; i < 8; i++){
         pontualLights[i].visible = lightsOn[i];
         console.log("lights on: " + lightsOn[i]);
+    }
+
+    if (currentShading == 'Gouraud'){
+        meshs.forEach(function (mesh) {
+            mesh.material = mesh.userData.materials[0];
+        });
+    } else if (currentShading == 'Phong'){
+        meshs.forEach(function (mesh) {
+            mesh.material = mesh.userData.materials[1];
+        });
+    } else if (currentShading == 'Cartoon'){
+        meshs.forEach(function (mesh) {
+            mesh.material = mesh.userData.materials[2];
+        });
+    } else if (currentShading == 'NormalMap'){
+        meshs.forEach(function (mesh) {
+            mesh.material = mesh.userData.materials[3];
+        });
     }
 }
 
