@@ -94,8 +94,8 @@ function createCamera(){
 function create_Lights(){
     var ambientLight = new THREE.AmbientLight(0xffa500, 3); // Tom alaranjado
     scene.add(ambientLight);
-    directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(0, 12, 0)
+    directionalLight = new THREE.DirectionalLight(0xffffff, 4);
+    directionalLight.position.set(0, 12, 12)
     directionalLight.target.position.set(0, 0, 0);
     // light axes helper
     scene.add(directionalLight);
@@ -124,10 +124,15 @@ function create_Lights(){
 
 function createCilindro() {
     var materialLambert = new THREE.MeshLambertMaterial({ color: 0xff7800 });
+    materialLambert.flatShading = true;
     var materialPhong = new THREE.MeshPhongMaterial({ color: 0xff7800 });
+    materialPhong.specular = new THREE.Color(0x111111);
+    materialPhong.shininess = 30;
+    materialPhong.flatShading = true;
     var materialToon = new THREE.MeshToonMaterial({ color: 0xff7800 });
     var materialNormal = new THREE.MeshNormalMaterial();
     cilindro = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 40, 100), materialLambert);
+    cilindro.normalsNeedUpdate = true;
     cilindro.userData = {materials: [materialLambert, materialPhong, materialToon, materialNormal]};
     meshs.push(cilindro);
 
@@ -171,7 +176,6 @@ function createAneis() {
     anelGrande.userData = {movingUp: true, movingDown: false, materials: [anelGrandeLambert, anelGrandePhong, anelGrandeToon, anelGrandeNormal]};
     anelMedio.userData = {movingUp: true, movingDown: false, materials: [anelMedioLambert, anelMedioPhong, anelMedioToon, anelMedioNormal]};
     anelPequeno.userData = {movingUp: true, movingDown: false, materials: [anelPequenoLambert, anelPequenoPhong, anelPequenoToon, anelPequenoNormal]};
-
     scene.add(anelGrande);
     scene.add(anelMedio);
     scene.add(anelPequeno);
@@ -353,6 +357,7 @@ function init() {
 /////////////////////
 function animate() {
     'use strict';
+    cilindro.normalsNeedUpdate = true;
     render();
 
     update();
