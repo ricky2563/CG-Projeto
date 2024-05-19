@@ -4,6 +4,8 @@ import { VRButton } from 'three/addons/webxr/VRButton.js';
 import * as Stats from 'three/addons/libs/stats.module.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
+import { ParametricGeometries } from 'three/addons/geometries/ParametricGeometries.js';
+
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
@@ -34,7 +36,83 @@ function createScene(){
     createCilindro();
     createAneis();
     createFaixaMobius();
+    createSuperficies();
 }
+
+function createSuperficies() {
+    // Define diferentes superfícies paramétricas
+    const surfaces = [
+        ParametricGeometries.cylinder,  // Cilindro
+        ParametricGeometries.cylinder,  // Cilindro
+        ParametricGeometries.cylinder,  // Cilindro
+        ParametricGeometries.cylinder,  // Cilindro
+        ParametricGeometries.cylinder,  // Cilindro
+        ParametricGeometries.cylinder,  // Cilindro
+        ParametricGeometries.cylinder,  // Cilindro
+        ParametricGeometries.cylinder  // Cilindro
+    ];
+
+    const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffffff, 0x000000];
+    const numSurfacesPerRing = 8;
+    const scaleFactor = 3;  
+
+    // Função auxiliar para criar superfícies
+    function createSurfacesForRing(ring, ringSuperficies, outerRadius) {
+        for (let i = 0; i < numSurfacesPerRing; i++) {
+            const surfaceFunc = surfaces[i];
+            const color = colors[i];
+            const geometry = new ParametricGeometry(surfaceFunc, 10, 10);
+            const materialLambert = new THREE.MeshLambertMaterial({ color: color, side: THREE.DoubleSide });
+            const materialPhong = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+            const materialToon = new THREE.MeshToonMaterial({ color: color, side: THREE.DoubleSide });
+            const materialNormal = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide });
+            const mesh = new THREE.Mesh(geometry, materialLambert);
+
+            const radius = outerRadius - 3;
+            const angleStep = (2 * Math.PI) / numSurfacesPerRing;
+            const angle = i * angleStep;
+
+            // Posiciona a superfície na mesma altura que o anel
+            mesh.position.set(
+                radius * Math.cos(angle),
+                radius * Math.sin(angle),
+                -1
+                
+            );
+            mesh.lookAt(new THREE.Vector3(ring.position.x, ring.position.y, ring.position.z));
+
+            mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+            mesh.userData = {
+                rotationSpeed: Math.random() * 0.02 + 0.01,
+                rotationAxis: new THREE.Vector3(Math.random(), Math.random(), Math.random()).normalize(),
+                materials: [materialLambert, materialPhong, materialToon, materialNormal]
+            };
+
+            ring.add(mesh);
+            meshs.push(mesh);
+            ringSuperficies.push(mesh);
+        }
+    }
+
+    // Arrays para armazenar as formas de cada anel
+    const anelGrandeSuperficies = [];
+    const anelMedioSuperficies = [];
+    const anelPequenoSuperficies = [];
+
+    // Cria superfícies para cada anel com o raio correto
+    createSurfacesForRing(anelGrande, anelGrandeSuperficies, 20); // Outer radius of anelGrande is 20
+    createSurfacesForRing(anelMedio, anelMedioSuperficies, 15);  // Outer radius of anelMedio is 15
+    createSurfacesForRing(anelPequeno, anelPequenoSuperficies, 10); // Outer radius of anelPequeno is 10
+
+    // Opcional: Armazena os arrays de superfícies em um objeto para facilitar o acesso posterior
+    scene.userData.anelSuperficies = {
+        anelGrande: anelGrandeSuperficies,
+        anelMedio: anelMedioSuperficies,
+        anelPequeno: anelPequenoSuperficies
+    };
+}
+
 
 function createSkydome(){
     const skyGeometry = new THREE.SphereGeometry(45, 32, 32, Math.PI/ 2, Math.PI);    
@@ -290,6 +368,14 @@ function update(){
             }
         }
     }
+
+    // Atualiza a rotação das superfícies
+    meshs.forEach(mesh => {
+        if (mesh.userData.rotationSpeed) {
+            mesh.rotateOnAxis(mesh.userData.rotationAxis, mesh.userData.rotationSpeed);
+        }
+    });
+
     // CHANGE LIGHTS
     directionalLight.visible = directionalLightOn;
     for (let i = 0; i < 8; i++){
