@@ -4,7 +4,7 @@ import { VRButton } from 'three/addons/webxr/VRButton.js';
 import * as Stats from 'three/addons/libs/stats.module.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
-import { ParametricGeometries } from 'three/addons/geometries/ParametricGeometries.js';
+//import { ParametricGeometries } from 'three/addons/geometries/ParametricGeometries.js';
 
 //////////////////////
 /* GLOBAL VARIABLES */
@@ -39,29 +39,133 @@ function createScene(){
     createSuperficies();
 }
 
+const ParametricGeometries = {
+    klein: function (u, v, target) {
+        u *= Math.PI;
+        v *= 2 * Math.PI;
+        u = u * 2;
+        let x, y, z;
+        if (u < Math.PI) {
+            x = 3 * Math.cos(u) * (1 + Math.sin(u)) + (2 * (1 - Math.cos(u) / 2)) * Math.cos(u) * Math.cos(v);
+            y = 8 * Math.sin(u) + (2 * (1 - Math.cos(u) / 2)) * Math.sin(u) * Math.cos(v);
+        } else {
+            x = 3 * Math.cos(u) * (1 + Math.sin(u)) + (2 * (1 - Math.cos(u) / 2)) * Math.cos(v + Math.PI);
+            y = 8 * Math.sin(u);
+        }
+        z = (2 * (1 - Math.cos(u) / 2)) * Math.sin(v);
+        target.set(x, y, z);
+    },
+    plane: function (u, v, target) {
+        const x = 2 * (u - 0.5);
+        const y = 2 * (v - 0.5);
+        const z = Math.sin(u * Math.PI) * Math.cos(v * Math.PI);
+        target.set(x, y, z);
+    },
+    torus: function (u, v, target) {
+        const radius = 1;
+        const tube = 0.4;
+        const x = (radius + tube * Math.cos(v * Math.PI * 2)) * Math.cos(u * Math.PI * 2);
+        const y = (radius + tube * Math.cos(v * Math.PI * 2)) * Math.sin(u * Math.PI * 2);
+        const z = tube * Math.sin(v * Math.PI * 2);
+        target.set(x, y, z);
+    },
+    sphere: function (u, v, target) {
+        const radius = 1.5;
+        const x = radius * Math.sin(u * Math.PI * 2) * Math.sin(v * Math.PI);
+        const y = radius * Math.cos(v * Math.PI);
+        const z = radius * Math.cos(u * Math.PI * 2) * Math.sin(v * Math.PI);
+        target.set(x, y, z);
+    },
+    cylinder: function (u, v, target) {
+        const radius = 0.75;
+        const height = 3;
+        const x = radius * Math.cos(u * Math.PI * 2);
+        const y = height * (v - 0.5);
+        const z = radius * Math.sin(u * Math.PI * 2);
+        target.set(x, y, z);
+    },
+    paraboloid: function (u, v, target) {
+        const a = 1;
+        const b = 1;
+        const x = a * Math.sinh(u) * Math.cos(v * Math.PI * 2);
+        const y = a * Math.sinh(u) * Math.sin(v * Math.PI * 2);
+        const z = b * Math.cosh(u);
+        target.set(x, y, z);
+    },
+    hyperboloid: function (u, v, target) {
+        const a = 1;
+        const c = 1;
+        const x = a * Math.cosh(u) * Math.cos(v * Math.PI * 2);
+        const y = a * Math.cosh(u) * Math.sin(v * Math.PI * 2);
+        const z = c * Math.sinh(u);
+        target.set(x, y, z);
+    },
+    helicoid: function (u, v, target) {
+        const a = 1;
+        const b = 0.5;
+        const x = a * u * Math.cos(v * Math.PI * 2);
+        const y = a * u * Math.sin(v * Math.PI * 2);
+        const z = b * v * Math.PI * 2;
+        target.set(x, y, z);
+    }
+};
+
+// Create BufferGeometry from parametric function
+function createParametricBufferGeometry(func, slices, stacks) {
+    const vertices = [];
+    const indices = [];
+    const target = new THREE.Vector3();
+
+    for (let i = 0; i <= slices; i++) {
+        for (let j = 0; j <= stacks; j++) {
+            const u = i / slices;
+            const v = j / stacks;
+            func(u, v, target);
+            vertices.push(target.x, target.y, target.z);
+        }
+    }
+
+    for (let i = 0; i < slices; i++) {
+        for (let j = 0; j < stacks; j++) {
+            const a = i * (stacks + 1) + (j + 1);
+            const b = i * (stacks + 1) + j;
+            const c = (i + 1) * (stacks + 1) + j;
+            const d = (i + 1) * (stacks + 1) + (j + 1);
+            indices.push(a, b, d);
+            indices.push(b, c, d);
+        }
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setIndex(indices);
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geometry.computeVertexNormals();
+    return geometry;
+}
+
 function createSuperficies() {
     // Define diferentes superfícies paramétricas
     const surfaces = [
-        ParametricGeometries.cylinder,  // Cilindro
-        ParametricGeometries.cylinder,  // Cilindro
-        ParametricGeometries.cylinder,  // Cilindro
-        ParametricGeometries.cylinder,  // Cilindro
-        ParametricGeometries.cylinder,  // Cilindro
-        ParametricGeometries.cylinder,  // Cilindro
-        ParametricGeometries.cylinder,  // Cilindro
-        ParametricGeometries.cylinder  // Cilindro
+        ParametricGeometries.klein,
+        ParametricGeometries.plane,
+        ParametricGeometries.torus,
+        ParametricGeometries.sphere,
+        ParametricGeometries.cylinder,
+        ParametricGeometries.paraboloid,
+        ParametricGeometries.hyperboloid,
+        ParametricGeometries.helicoid
     ];
 
     const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffffff, 0x000000];
     const numSurfacesPerRing = 8;
-    const scaleFactor = 3;  
+    const kleinScaleFactor = 0.3;
 
     // Função auxiliar para criar superfícies
-    function createSurfacesForRing(ring, ringSuperficies, outerRadius) {
+    function createSurfacesForRing(ring, ringSuperficies, outerRadius, scaleFactor) {
         for (let i = 0; i < numSurfacesPerRing; i++) {
             const surfaceFunc = surfaces[i];
             const color = colors[i];
-            const geometry = new ParametricGeometry(surfaceFunc, 10, 10);
+            const geometry = createParametricBufferGeometry(surfaceFunc, 10, 10);
             const materialLambert = new THREE.MeshLambertMaterial({ color: color, side: THREE.DoubleSide });
             const materialPhong = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
             const materialToon = new THREE.MeshToonMaterial({ color: color, side: THREE.DoubleSide });
@@ -76,12 +180,16 @@ function createSuperficies() {
             mesh.position.set(
                 radius * Math.cos(angle),
                 radius * Math.sin(angle),
-                -1
+                -2
                 
             );
             mesh.lookAt(new THREE.Vector3(ring.position.x, ring.position.y, ring.position.z));
-
-            mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+            if(i == 0) {
+                mesh.scale.set(kleinScaleFactor, kleinScaleFactor, kleinScaleFactor);
+            }
+            else {
+                mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+            }
 
             mesh.userData = {
                 rotationSpeed: Math.random() * 0.02 + 0.01,
@@ -101,9 +209,9 @@ function createSuperficies() {
     const anelPequenoSuperficies = [];
 
     // Cria superfícies para cada anel com o raio correto
-    createSurfacesForRing(anelGrande, anelGrandeSuperficies, 20); // Outer radius of anelGrande is 20
-    createSurfacesForRing(anelMedio, anelMedioSuperficies, 15);  // Outer radius of anelMedio is 15
-    createSurfacesForRing(anelPequeno, anelPequenoSuperficies, 10); // Outer radius of anelPequeno is 10
+    createSurfacesForRing(anelGrande, anelGrandeSuperficies, 20, 2.5); // Outer radius of anelGrande is 20
+    createSurfacesForRing(anelMedio, anelMedioSuperficies, 15, 2);  // Outer radius of anelMedio is 15
+    createSurfacesForRing(anelPequeno, anelPequenoSuperficies, 10, 1); // Outer radius of anelPequeno is 10
 
     // Opcional: Armazena os arrays de superfícies em um objeto para facilitar o acesso posterior
     scene.userData.anelSuperficies = {
@@ -150,7 +258,7 @@ function createCamera(){
     stereoCamera = new THREE.StereoCamera();
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(20, 30, 20);
+    camera.position.set(20, 70, 20);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     //camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
