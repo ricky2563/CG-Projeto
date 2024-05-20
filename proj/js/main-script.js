@@ -13,12 +13,11 @@ import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.j
 var camera, scene, renderer, stereoCamera;
 var moveAnelGrande = false, moveAnelPequeno = false, moveAnelMedio = false;
 var currentShading = 'Gouraud';
-var directionalLightOn = true, lightsOn = [], pontualLights = [];
+var directionalLightOn = true, pontualLightsOn = true, pontualLights = [];
 var faixaMobius;
-var directionalLight
+var directionalLight, carrossel, skyDome;
 var cilindro, anelGrande = new THREE.Object3D(), anelMedio = new THREE.Object3D(), anelPequeno = new THREE.Object3D();
-var activeKeys = [];
-var meshs = [];
+var meshs = [], spotLights=[], spotLightsOn = true;
 
 
 
@@ -37,6 +36,7 @@ function createScene(){
     createAneis();
     createFaixaMobius();
     createSuperficies();
+    createCarrossel();
 }
 
 const ParametricGeometries = {
@@ -156,12 +156,13 @@ function createSuperficies() {
         ParametricGeometries.helicoid
     ];
 
-    const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffffff, 0x000000];
+    const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffffff, 0x3d5e6f];
     const numSurfacesPerRing = 8;
     const kleinScaleFactor = 0.3;
 
     // Função auxiliar para criar superfícies
-    function createSurfacesForRing(ring, ringSuperficies, outerRadius, scaleFactor) {
+    function createSurfacesForRing(ring_no, ring, ringSuperficies, outerRadius, scaleFactor) {
+        spotLights[ring_no] = [];
         for (let i = 0; i < numSurfacesPerRing; i++) {
             const surfaceFunc = surfaces[i];
             const color = colors[i];
@@ -174,7 +175,7 @@ function createSuperficies() {
 
             const radius = outerRadius - 3;
             const angleStep = (2 * Math.PI) / numSurfacesPerRing;
-            const angle = i * angleStep;
+            const angle = i * angleStep + (Math.PI / 2)*ring_no;
 
             // Posiciona a superfície na mesma altura que o anel
             mesh.position.set(
@@ -183,6 +184,21 @@ function createSuperficies() {
                 -2
                 
             );
+            spotLights[ring_no][i] = new THREE.SpotLight( 0xffffff );
+            spotLights[ring_no][i].position.set(
+                radius * Math.cos(angle),
+                radius * Math.sin(angle),
+                -5
+                
+            );
+
+            spotLights[ring_no][i].target = mesh; // Aponta a luz para a superfície
+
+            // Adiciona a luz à cena
+            scene.add(spotLights[ring_no][i]);
+            scene.add(spotLights[ring_no][i].target);
+
+
             mesh.lookAt(new THREE.Vector3(ring.position.x, ring.position.y, ring.position.z));
             if(i == 0) {
                 mesh.scale.set(kleinScaleFactor, kleinScaleFactor, kleinScaleFactor);
@@ -198,6 +214,8 @@ function createSuperficies() {
             };
 
             ring.add(mesh);
+            ring.add(spotLights[ring_no][i]);
+            ring.add(spotLights[ring_no][i].target);
             meshs.push(mesh);
             ringSuperficies.push(mesh);
         }
@@ -209,9 +227,9 @@ function createSuperficies() {
     const anelPequenoSuperficies = [];
 
     // Cria superfícies para cada anel com o raio correto
-    createSurfacesForRing(anelGrande, anelGrandeSuperficies, 20, 2.5); // Outer radius of anelGrande is 20
-    createSurfacesForRing(anelMedio, anelMedioSuperficies, 15, 2);  // Outer radius of anelMedio is 15
-    createSurfacesForRing(anelPequeno, anelPequenoSuperficies, 10, 1); // Outer radius of anelPequeno is 10
+    createSurfacesForRing(0, anelGrande, anelGrandeSuperficies, 20, 2.5); // Outer radius of anelGrande is 20
+    createSurfacesForRing(1, anelMedio, anelMedioSuperficies, 15, 2);  // Outer radius of anelMedio is 15
+    createSurfacesForRing(2, anelPequeno, anelPequenoSuperficies, 10, 1); // Outer radius of anelPequeno is 10
 
     // Opcional: Armazena os arrays de superfícies em um objeto para facilitar o acesso posterior
     scene.userData.anelSuperficies = {
@@ -242,7 +260,7 @@ function createSkydome(){
     });
     
     // Create a mesh with the skydome geometry and multi-material
-    var skyDome = new THREE.Mesh(skyGeometry, skydomeLambert);
+    skyDome = new THREE.Mesh(skyGeometry, skydomeLambert);
     skyDome.userData = {materials: [skydomeLambert, skydomePhong, skydomeToon, skydomeNormal]};
     meshs.push(skyDome);
     skyDome.rotation.z = Math.PI / 2; 
@@ -258,16 +276,16 @@ function createCamera(){
     stereoCamera = new THREE.StereoCamera();
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(20, 70, 20);
+    camera.position.set(10, 70, 10);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     //camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     //camera.position.z = 5; // Set the camera position
 
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.x = 50;
+    camera.position.x = 0;
     camera.position.y = 50;
-    camera.position.z = 50;    
+    camera.position.z = 45;    
     camera.lookAt(scene.position);
     scene.add(camera);
 
@@ -288,18 +306,17 @@ function create_Lights(){
     directionalLightOn = true;
 
     const lightColor = 0xffffff;
-    const lightIntensity = 1;
-    const lightRadius = 15; // Raio em que as luzes serão distribuídas
+    const lightIntensity = 10;
+    const lightRadius = 9; // Raio em que as luzes serão distribuídas
 
     for (let i = 0; i < 8; i++) {
         const angle = (i / 8) * Math.PI * 2;
         const x = lightRadius * Math.cos(angle);
         const z = lightRadius * Math.sin(angle);
-        const light = new THREE.PointLight(lightColor, lightIntensity);
-        light.position.set(x, 41, z); // Colocar as luzes na mesma altura da faixa
+        const light = new THREE.PointLight(lightColor, lightIntensity, 10);
+        light.position.set(x, 35, z); // Colocar as luzes na mesma altura da faixa
         light.lookAt(faixaMobius.position); // Apontar para a faixa
         pontualLights.push(light);
-        lightsOn[i] = true;
         scene.add(light);
     }
 }
@@ -315,14 +332,16 @@ function createCilindro() {
     materialPhong.specular = new THREE.Color(0x111111);
     materialPhong.shininess = 30;
     materialPhong.flatShading = true;
-    var materialToon = new THREE.MeshToonMaterial({ color: 0xff7800 });
+    var materialToon = new THREE.MeshToonMaterial({
+         color: 0xff7800});
+    
     var materialNormal = new THREE.MeshNormalMaterial();
-    cilindro = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 40, 100), materialLambert);
+    cilindro = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 30, 100), materialLambert);
     cilindro.normalsNeedUpdate = true;
     cilindro.userData = {materials: [materialLambert, materialPhong, materialToon, materialNormal]};
     meshs.push(cilindro);
 
-    cilindro.position.set(0, 20, 0);
+    cilindro.position.set(0, 15, 0);
     
     scene.add(cilindro);
 }
@@ -336,13 +355,13 @@ function createAneis() {
     meshs.push(anelGrande);
     var anelMedioLambert = new THREE.MeshLambertMaterial({ color: 0x0099ff, side: THREE.DoubleSide });
     var anelMedioPhong = new THREE.MeshPhongMaterial({ color: 0x0099ff, side: THREE.DoubleSide });
-    var anelMedioToon = new THREE.MeshToonMaterial({ color: 0x0099ff, side: THREE.DoubleSide });
+    var anelMedioToon = new THREE.MeshToonMaterial({ color: 0x0099ff, side: THREE.DoubleSide});
     var anelMedioNormal = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
     anelMedio = new THREE.Mesh(new THREE.RingGeometry(10, 15, 64, 20, 0, 2*Math.PI), anelMedioLambert);
     meshs.push(anelMedio);
     var anelPequenoLambert = new THREE.MeshLambertMaterial({ color: 0x99ff99, side: THREE.DoubleSide });
     var anelPequenoPhong = new THREE.MeshPhongMaterial({ color: 0x99ff99, side: THREE.DoubleSide });
-    var anelPequenoToon = new THREE.MeshToonMaterial({ color: 0x99ff99, side: THREE.DoubleSide });
+    var anelPequenoToon = new THREE.MeshToonMaterial({ color: 0x99ff99, side: THREE.DoubleSide});
     var anelPequenoNormal = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
     anelPequeno = new THREE.Mesh(new THREE.RingGeometry(5, 10, 64, 20, 0, 2*Math.PI), anelPequenoLambert);
     meshs.push(anelPequeno);
@@ -400,14 +419,29 @@ function createFaixaMobius() {
     mobiusGeometry.computeVertexNormals();
 
     // Criar e adicionar a faixa de Möbius
-    const materialMobius = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true });
-    faixaMobius = new THREE.Mesh(mobiusGeometry, materialMobius); 
-    faixaMobius.position.y = 41; 
+    var materialMobiusLambert = new THREE.MeshLambertMaterial({ color: 0xfdfdfd, wireframe: false, side: THREE.DoubleSide});
+    var materialMobiusPhong = new THREE.MeshPhongMaterial({ color: 0xfdfdfd, wireframe: false, side: THREE.DoubleSide});
+    var materialMobiusToon = new THREE.MeshToonMaterial({ color: 0xfdfdfd , wireframe: false, side: THREE.DoubleSide});
+    var materialMobiusNormal = new THREE.MeshNormalMaterial({ wireframe: false, side: THREE.DoubleSide});
+    faixaMobius = new THREE.Mesh(mobiusGeometry, materialMobiusLambert); 
+    meshs.push(faixaMobius);
+    faixaMobius.userData = {materials: [materialMobiusLambert, materialMobiusPhong, materialMobiusToon, materialMobiusNormal]};
+    faixaMobius.position.y = 32; 
     faixaMobius.rotation.x = Math.PI/2; 
     scene.add(faixaMobius);
 }
 
+function createCarrossel() {
+    carrossel = new THREE.Object3D();
+    carrossel.add(anelGrande);
+    carrossel.add(anelMedio);
+    carrossel.add(anelPequeno);
+    carrossel.add(cilindro);
+    carrossel.add(faixaMobius);
+    carrossel.add(skyDome)
+    scene.add(carrossel);
 
+}
 
 
 //////////////////////
@@ -431,7 +465,7 @@ function update(){
     if(moveAnelGrande){
         if(anelGrande.userData.movingUp){
             anelGrande.position.y += 0.25;
-            if(anelGrande.position.y >= 37){
+            if(anelGrande.position.y >= 27){
                 anelGrande.userData.movingUp = false;
                 anelGrande.userData.movingDown = true;
             }
@@ -447,7 +481,7 @@ function update(){
     if(moveAnelMedio){
         if(anelMedio.userData.movingUp){
             anelMedio.position.y += 0.25;
-            if(anelMedio.position.y >= 37){
+            if(anelMedio.position.y >= 27){
                 anelMedio.userData.movingUp = false;
                 anelMedio.userData.movingDown = true;
             }
@@ -463,7 +497,7 @@ function update(){
     if(moveAnelPequeno){
         if(anelPequeno.userData.movingUp){
             anelPequeno.position.y += 0.25;
-            if(anelPequeno.position.y >= 37){
+            if(anelPequeno.position.y >= 27){
                 anelPequeno.userData.movingUp = false;
                 anelPequeno.userData.movingDown = true;
             }
@@ -487,8 +521,15 @@ function update(){
     // CHANGE LIGHTS
     directionalLight.visible = directionalLightOn;
     for (let i = 0; i < 8; i++){
-        pontualLights[i].visible = lightsOn[i];
-        console.log("lights on: " + lightsOn[i]);
+        pontualLights[i].visible = pontualLightsOn;
+    }
+
+    for(let ring_no = 0; ring_no < 3; ring_no++){
+        for (let i = 0; i < 8; i++){
+
+            if (spotLights[ring_no][i] == undefined) continue;
+            spotLights[ring_no][i].visible = !spotLightsOn;
+        };
     }
 
     if (currentShading == 'Gouraud'){
@@ -508,6 +549,8 @@ function update(){
             mesh.material = mesh.userData.materials[3];
         });
     }
+
+    carrossel.rotation.y += 0.01;
 }
 
 function updateStereoCamera(){
@@ -551,7 +594,6 @@ function init() {
 /////////////////////
 function animate() {
     'use strict';
-    cilindro.normalsNeedUpdate = true;
     render();
 
     update();
@@ -581,9 +623,11 @@ function onKeyDown(event) {
 
         case 80: //P
         case 112: //p
-            for (let i = 0; i < 8; i++){
-                lightsOn[i] = !lightsOn[i];
-            };
+            pontualLightsOn = !pontualLightsOn;
+            break;
+        case 83: //S
+        case 115: //s
+            spotLightsOn = !spotLightsOn;
             break;
 
         case 81: //Q
@@ -611,21 +655,12 @@ function onKeyDown(event) {
             break;
 
         case 49: // Tecla '1' - Anel grande
-            if (!activeKeys.includes('1')){
-                activeKeys.push('1');
-            }
             moveAnelGrande = true;
             break;
         case 50: // Tecla '2' - Anel médio
-            if (!activeKeys.includes('2')){
-                activeKeys.push('2');
-            }
             moveAnelMedio = true;
             break;
         case 51: // Tecla '3' - Anel pequeno
-            if (!activeKeys.includes('3')){
-                activeKeys.push('3');
-            }
             moveAnelPequeno = true;
             break;
         
@@ -639,15 +674,12 @@ function onKeyUp(e){
     'use strict';
     switch (e.keyCode) {
         case 49: //1
-            activeKeys.splice(activeKeys.indexOf('1'), 1);
             moveAnelGrande = false;
             break;
         case 50: //2
-            activeKeys.splice(activeKeys.indexOf('2'), 1);
             moveAnelMedio = false;
             break;
         case 51: //3
-            activeKeys.splice(activeKeys.indexOf('3'), 1);
             moveAnelPequeno = false;
         break;
 
