@@ -11,10 +11,10 @@ import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.j
 //////////////////////
 
 var camera, scene, renderer, stereoCamera;
-var moveAnelGrande = false, moveAnelPequeno = false, moveAnelMedio = false;
+var moveAnelGrande = true, moveAnelPequeno = true, moveAnelMedio = true;
 var currentShading = 'Gouraud';
 var directionalLightOn = true, pontualLightsOn = true, pontualLights = [];
-var faixaMobius;
+var faixaMobius, controls;
 var directionalLight, carrossel, skyDome;
 var cilindro, anelGrande = new THREE.Object3D(), anelMedio = new THREE.Object3D(), anelPequeno = new THREE.Object3D();
 var meshs = [], spotLights=[], spotLightsOn = true;
@@ -227,9 +227,9 @@ function createSuperficies() {
     const anelPequenoSuperficies = [];
 
     // Cria superfícies para cada anel com o raio correto
-    createSurfacesForRing(0, anelGrande, anelGrandeSuperficies, 20, 2.5); // Outer radius of anelGrande is 20
-    createSurfacesForRing(1, anelMedio, anelMedioSuperficies, 15, 2);  // Outer radius of anelMedio is 15
-    createSurfacesForRing(2, anelPequeno, anelPequenoSuperficies, 10, 1); // Outer radius of anelPequeno is 10
+    createSurfacesForRing(0, anelGrande, anelGrandeSuperficies, 20, 2); // Outer radius of anelGrande is 20
+    createSurfacesForRing(1, anelMedio, anelMedioSuperficies, 15, 1.5);  // Outer radius of anelMedio is 15
+    createSurfacesForRing(2, anelPequeno, anelPequenoSuperficies, 10, 0.75); // Outer radius of anelPequeno is 10
 
     // Opcional: Armazena os arrays de superfícies em um objeto para facilitar o acesso posterior
     scene.userData.anelSuperficies = {
@@ -282,10 +282,13 @@ function createCamera(){
     //camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     //camera.position.z = 5; // Set the camera position
 
+
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
     camera.position.x = 0;
     camera.position.y = 50;
     camera.position.z = 45;    
+    controls = new OrbitControls(camera, renderer.domElement);
+
     camera.lookAt(scene.position);
     scene.add(camera);
 
@@ -314,7 +317,7 @@ function create_Lights(){
         const x = lightRadius * Math.cos(angle);
         const z = lightRadius * Math.sin(angle);
         const light = new THREE.PointLight(lightColor, lightIntensity, 10);
-        light.position.set(x, 35, z); // Colocar as luzes na mesma altura da faixa
+        light.position.set(x, 39, z); // Colocar as luzes na mesma altura da faixa
         light.lookAt(faixaMobius.position); // Apontar para a faixa
         pontualLights.push(light);
         scene.add(light);
@@ -426,7 +429,7 @@ function createFaixaMobius() {
     faixaMobius = new THREE.Mesh(mobiusGeometry, materialMobiusLambert); 
     meshs.push(faixaMobius);
     faixaMobius.userData = {materials: [materialMobiusLambert, materialMobiusPhong, materialMobiusToon, materialMobiusNormal]};
-    faixaMobius.position.y = 32; 
+    faixaMobius.position.y = 36; 
     faixaMobius.rotation.x = Math.PI/2; 
     scene.add(faixaMobius);
 }
@@ -465,14 +468,14 @@ function update(){
     if(moveAnelGrande){
         if(anelGrande.userData.movingUp){
             anelGrande.position.y += 0.25;
-            if(anelGrande.position.y >= 27){
+            if(anelGrande.position.y >= 30){
                 anelGrande.userData.movingUp = false;
                 anelGrande.userData.movingDown = true;
             }
         }
         if(anelGrande.userData.movingDown){
             anelGrande.position.y -= 0.25;
-            if(anelGrande.position.y <= 3){
+            if(anelGrande.position.y <= 1){
                 anelGrande.userData.movingUp = true;
                 anelGrande.userData.movingDown = false;
             }
@@ -481,14 +484,14 @@ function update(){
     if(moveAnelMedio){
         if(anelMedio.userData.movingUp){
             anelMedio.position.y += 0.25;
-            if(anelMedio.position.y >= 27){
+            if(anelMedio.position.y >= 30){
                 anelMedio.userData.movingUp = false;
                 anelMedio.userData.movingDown = true;
             }
         }
         if(anelMedio.userData.movingDown){
             anelMedio.position.y -= 0.25;
-            if(anelMedio.position.y <= 3){
+            if(anelMedio.position.y <= 1){
                 anelMedio.userData.movingUp = true;
                 anelMedio.userData.movingDown = false;
             }
@@ -497,14 +500,14 @@ function update(){
     if(moveAnelPequeno){
         if(anelPequeno.userData.movingUp){
             anelPequeno.position.y += 0.25;
-            if(anelPequeno.position.y >= 27){
+            if(anelPequeno.position.y >= 30){
                 anelPequeno.userData.movingUp = false;
                 anelPequeno.userData.movingDown = true;
             }
         }
         if(anelPequeno.userData.movingDown == true){
             anelPequeno.position.y -= 0.25;
-            if(anelPequeno.position.y <= 3){
+            if(anelPequeno.position.y <= 1){
                 anelPequeno.userData.movingUp = true;
                 anelPequeno.userData.movingDown = false;
             }
@@ -551,6 +554,8 @@ function update(){
     }
 
     carrossel.rotation.y += 0.01;
+
+    controls.update();
 }
 
 function updateStereoCamera(){
@@ -586,7 +591,7 @@ function init() {
 
     window.addEventListener("resize", onResize);
     window.addEventListener("keydown", onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
+    //window.addEventListener('keyup', onKeyUp);
 }
 
 /////////////////////
@@ -655,13 +660,13 @@ function onKeyDown(event) {
             break;
 
         case 49: // Tecla '1' - Anel grande
-            moveAnelGrande = true;
+            moveAnelGrande = !moveAnelGrande;
             break;
         case 50: // Tecla '2' - Anel médio
-            moveAnelMedio = true;
+            moveAnelMedio = !moveAnelMedio;
             break;
         case 51: // Tecla '3' - Anel pequeno
-            moveAnelPequeno = true;
+            moveAnelPequeno = !moveAnelPequeno;
             break;
         
     }
@@ -670,6 +675,7 @@ function onKeyDown(event) {
 ///////////////////////
 /* KEY UP CALLBACK */
 ///////////////////////
+/*
 function onKeyUp(e){
     'use strict';
     switch (e.keyCode) {
@@ -686,7 +692,7 @@ function onKeyUp(e){
         
     }
 
-}
+}*/
 
 init();
 animate();
