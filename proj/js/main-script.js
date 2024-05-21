@@ -279,10 +279,6 @@ function createCamera(){
     camera.position.set(10, 70, 10);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    //camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    //camera.position.z = 5; // Set the camera position
-
-
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
     camera.position.x = 0;
     camera.position.y = 50;
@@ -582,8 +578,12 @@ function render() {
 function init() {
     'use strict';
     renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+
+    renderer.xr.enabled = true;
+    document.body.appendChild(VRButton.createButton(renderer));
 
     createScene();
     create_Lights();
@@ -602,9 +602,11 @@ function animate() {
     render();
 
     update();
-    requestAnimationFrame(animate);
+    // requestAnimationFrame(animate);
+    renderer.setAnimationLoop(animate);
 
     renderer.render(scene, camera);
+    
 }
 
 ////////////////////////////
