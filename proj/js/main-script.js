@@ -171,6 +171,7 @@ function createSuperficies() {
             const materialPhong = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
             const materialToon = new THREE.MeshToonMaterial({ color: color, side: THREE.DoubleSide });
             const materialNormal = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide });
+            const materialBasic = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
             const mesh = new THREE.Mesh(geometry, materialLambert);
 
             const radius = outerRadius - 3;
@@ -210,7 +211,7 @@ function createSuperficies() {
             mesh.userData = {
                 rotationSpeed: Math.random() * 0.02 + 0.01,
                 rotationAxis: new THREE.Vector3(Math.random(), Math.random(), Math.random()).normalize(),
-                materials: [materialLambert, materialPhong, materialToon, materialNormal]
+                materials: [materialLambert, materialPhong, materialToon, materialNormal, materialBasic]
             };
 
             ring.add(mesh);
@@ -258,10 +259,14 @@ function createSkydome(){
         map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
         side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
     });
+    const skydomeBasic = new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
+        side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
+    });
     
     // Create a mesh with the skydome geometry and multi-material
     skyDome = new THREE.Mesh(skyGeometry, skydomeLambert);
-    skyDome.userData = {materials: [skydomeLambert, skydomePhong, skydomeToon, skydomeNormal]};
+    skyDome.userData = {materials: [skydomeLambert, skydomePhong, skydomeToon, skydomeNormal, skydomeBasic]};
     meshs.push(skyDome);
     skyDome.rotation.z = Math.PI / 2; 
     skyDome.position.y = 0;
@@ -326,18 +331,13 @@ function create_Lights(){
 
 function createCilindro() {
     var materialLambert = new THREE.MeshLambertMaterial({ color: 0xff7800 });
-    materialLambert.flatShading = true;
     var materialPhong = new THREE.MeshPhongMaterial({ color: 0xff7800 });
-    materialPhong.specular = new THREE.Color(0x111111);
-    materialPhong.shininess = 30;
-    materialPhong.flatShading = true;
-    var materialToon = new THREE.MeshToonMaterial({
-         color: 0xff7800});
-    
+    var materialToon = new THREE.MeshToonMaterial({color: 0xff7800});
     var materialNormal = new THREE.MeshNormalMaterial();
+    var materialBasic = new THREE.MeshBasicMaterial({ color: 0xff7800 });
     cilindro = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 30, 100), materialLambert);
-    cilindro.normalsNeedUpdate = true;
-    cilindro.userData = {materials: [materialLambert, materialPhong, materialToon, materialNormal]};
+    
+    cilindro.userData = {materials: [materialLambert, materialPhong, materialToon, materialNormal, materialBasic]};
     meshs.push(cilindro);
 
     cilindro.position.set(0, 15, 0);
@@ -350,18 +350,21 @@ function createAneis() {
     var anelGrandePhong = new THREE.MeshPhongMaterial({ color: 0xff9933, side: THREE.DoubleSide });
     var anelGrandeToon = new THREE.MeshToonMaterial({ color: 0xff9933, side: THREE.DoubleSide });
     var anelGrandeNormal = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+    var anelGrandeBasic = new THREE.MeshBasicMaterial({ color: 0xff9933, side: THREE.DoubleSide });
     anelGrande = new THREE.Mesh(new THREE.RingGeometry(15, 20, 64, 20, 0, 2*Math.PI), anelGrandeLambert);
     meshs.push(anelGrande);
     var anelMedioLambert = new THREE.MeshLambertMaterial({ color: 0x0099ff, side: THREE.DoubleSide });
     var anelMedioPhong = new THREE.MeshPhongMaterial({ color: 0x0099ff, side: THREE.DoubleSide });
     var anelMedioToon = new THREE.MeshToonMaterial({ color: 0x0099ff, side: THREE.DoubleSide});
     var anelMedioNormal = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+    var anelMedioBasic = new THREE.MeshBasicMaterial({ color: 0x0099ff, side: THREE.DoubleSide });
     anelMedio = new THREE.Mesh(new THREE.RingGeometry(10, 15, 64, 20, 0, 2*Math.PI), anelMedioLambert);
     meshs.push(anelMedio);
     var anelPequenoLambert = new THREE.MeshLambertMaterial({ color: 0x99ff99, side: THREE.DoubleSide });
     var anelPequenoPhong = new THREE.MeshPhongMaterial({ color: 0x99ff99, side: THREE.DoubleSide });
     var anelPequenoToon = new THREE.MeshToonMaterial({ color: 0x99ff99, side: THREE.DoubleSide});
     var anelPequenoNormal = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+    var anelPequenoBasic = new THREE.MeshBasicMaterial({ color: 0x99ff99, side: THREE.DoubleSide });
     anelPequeno = new THREE.Mesh(new THREE.RingGeometry(5, 10, 64, 20, 0, 2*Math.PI), anelPequenoLambert);
     meshs.push(anelPequeno);
 
@@ -377,9 +380,9 @@ function createAneis() {
 
     /*movingUp inicializado a true para quando o botão de mover o anel
     for pressionada ele começar a subir */
-    anelGrande.userData = {movingUp: true, movingDown: false, materials: [anelGrandeLambert, anelGrandePhong, anelGrandeToon, anelGrandeNormal]};
-    anelMedio.userData = {movingUp: true, movingDown: false, materials: [anelMedioLambert, anelMedioPhong, anelMedioToon, anelMedioNormal]};
-    anelPequeno.userData = {movingUp: true, movingDown: false, materials: [anelPequenoLambert, anelPequenoPhong, anelPequenoToon, anelPequenoNormal]};
+    anelGrande.userData = {movingUp: true, movingDown: false, materials: [anelGrandeLambert, anelGrandePhong, anelGrandeToon, anelGrandeNormal, anelGrandeBasic]};
+    anelMedio.userData = {movingUp: true, movingDown: false, materials: [anelMedioLambert, anelMedioPhong, anelMedioToon, anelMedioNormal, anelMedioBasic]};
+    anelPequeno.userData = {movingUp: true, movingDown: false, materials: [anelPequenoLambert, anelPequenoPhong, anelPequenoToon, anelPequenoNormal, anelPequenoBasic]};
     scene.add(anelGrande);
     scene.add(anelMedio);
     scene.add(anelPequeno);
@@ -422,9 +425,10 @@ function createFaixaMobius() {
     var materialMobiusPhong = new THREE.MeshPhongMaterial({ color: 0xfdfdfd, wireframe: false, side: THREE.DoubleSide});
     var materialMobiusToon = new THREE.MeshToonMaterial({ color: 0xfdfdfd , wireframe: false, side: THREE.DoubleSide});
     var materialMobiusNormal = new THREE.MeshNormalMaterial({ wireframe: false, side: THREE.DoubleSide});
+    var materialMobiusBasic = new THREE.MeshBasicMaterial({ color: 0xfdfdfd, wireframe: false, side: THREE.DoubleSide });
     faixaMobius = new THREE.Mesh(mobiusGeometry, materialMobiusLambert); 
     meshs.push(faixaMobius);
-    faixaMobius.userData = {materials: [materialMobiusLambert, materialMobiusPhong, materialMobiusToon, materialMobiusNormal]};
+    faixaMobius.userData = {materials: [materialMobiusLambert, materialMobiusPhong, materialMobiusToon, materialMobiusNormal, materialMobiusBasic]};
     faixaMobius.position.y = 36; 
     faixaMobius.rotation.x = Math.PI/2; 
     scene.add(faixaMobius);
@@ -547,6 +551,10 @@ function update(){
         meshs.forEach(function (mesh) {
             mesh.material = mesh.userData.materials[3];
         });
+    } else if (currentShading == 'Basic'){
+        meshs.forEach(function (mesh) {
+            mesh.material = mesh.userData.materials[4];
+        });
     }
 
     carrossel.rotation.y += 0.01;
@@ -659,6 +667,11 @@ function onKeyDown(event) {
         case 82: //R
         case 114: //r
             currentShading = 'NormalMap';
+            break;
+
+        case 84: //T
+        case 116: //t
+            currentShading = 'Basic';
             break;
 
         case 49: // Tecla '1' - Anel grande
