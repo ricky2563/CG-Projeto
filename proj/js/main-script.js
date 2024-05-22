@@ -62,7 +62,7 @@ const ParametricGeometries = {
         target.set(x, y, z);
     },
     torus: function (u, v, target) {
-        const radius = 1;
+        const radius = 0.7;
         const tube = 0.4;
         const x = (radius + tube * Math.cos(v * Math.PI * 2)) * Math.cos(u * Math.PI * 2);
         const y = (radius + tube * Math.cos(v * Math.PI * 2)) * Math.sin(u * Math.PI * 2);
@@ -70,7 +70,7 @@ const ParametricGeometries = {
         target.set(x, y, z);
     },
     sphere: function (u, v, target) {
-        const radius = 1.5;
+        const radius = 1;
         const x = radius * Math.sin(u * Math.PI * 2) * Math.sin(v * Math.PI);
         const y = radius * Math.cos(v * Math.PI);
         const z = radius * Math.cos(u * Math.PI * 2) * Math.sin(v * Math.PI);
@@ -78,7 +78,7 @@ const ParametricGeometries = {
     },
     cylinder: function (u, v, target) {
         const radius = 0.75;
-        const height = 3;
+        const height = 2.5;
         const x = radius * Math.cos(u * Math.PI * 2);
         const y = height * (v - 0.5);
         const z = radius * Math.sin(u * Math.PI * 2);
@@ -184,11 +184,11 @@ function createSuperficies() {
                 -2
                 
             );
-            spotLights[ring_no][i] = new THREE.SpotLight( 0xffffff );
+            spotLights[ring_no][i] = new THREE.SpotLight( 0xffffff, 5 );
             spotLights[ring_no][i].position.set(
                 radius * Math.cos(angle),
                 radius * Math.sin(angle),
-                -5
+                0
                 
             );
 
