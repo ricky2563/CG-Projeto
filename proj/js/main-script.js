@@ -351,21 +351,73 @@ function createAneis() {
     var anelGrandeToon = new THREE.MeshToonMaterial({ color: 0xff9933, side: THREE.DoubleSide });
     var anelGrandeNormal = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
     var anelGrandeBasic = new THREE.MeshBasicMaterial({ color: 0xff9933, side: THREE.DoubleSide });
-    anelGrande = new THREE.Mesh(new THREE.RingGeometry(15, 20, 64, 20, 0, 2*Math.PI), anelGrandeLambert);
+    const ringShape = new THREE.Shape();
+
+    // Desenha o anel começando do círculo externo
+    ringShape.moveTo(20, 0);
+    ringShape.absarc(0, 0, 20, 0, 2 * Math.PI, false);
+
+    // Criação de um buraco para o círculo interno
+    const holePath = new THREE.Path();
+    holePath.moveTo(15, 0);
+    holePath.absarc(0, 0, 15, 0, 2 * Math.PI, true);
+
+    // Subtrai o círculo interno do externo
+    ringShape.holes.push(holePath);
+
+    // Configuração das opções de extrusão
+    const extrudeSettings = {
+        steps: 1,
+        depth: 5, // Espessura do anel (pode ser ajustada conforme necessário)
+        bevelEnabled: false
+    };
+
+    // Criação da geometria extrudada
+    anelGrande = new THREE.Mesh(new THREE.ExtrudeGeometry(ringShape, extrudeSettings), anelGrandeLambert);
     meshs.push(anelGrande);
     var anelMedioLambert = new THREE.MeshLambertMaterial({ color: 0x0099ff, side: THREE.DoubleSide });
     var anelMedioPhong = new THREE.MeshPhongMaterial({ color: 0x0099ff, side: THREE.DoubleSide });
     var anelMedioToon = new THREE.MeshToonMaterial({ color: 0x0099ff, side: THREE.DoubleSide});
     var anelMedioNormal = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
     var anelMedioBasic = new THREE.MeshBasicMaterial({ color: 0x0099ff, side: THREE.DoubleSide });
-    anelMedio = new THREE.Mesh(new THREE.RingGeometry(10, 15, 64, 20, 0, 2*Math.PI), anelMedioLambert);
+
+    const ringShape2 = new THREE.Shape();
+
+    ringShape2.moveTo(15, 0);
+    ringShape2.absarc(0, 0, 15, 0, 2 * Math.PI, false);
+
+    const holePath2 = new THREE.Path();
+
+    // Criação de um buraco para o círculo interno
+    holePath2.moveTo(10, 0);
+    holePath2.absarc(0, 0, 10, 0, 2 * Math.PI, true);
+
+    // Subtrai o círculo interno do externo
+    ringShape2.holes.push(holePath2);
+
+    anelMedio = new THREE.Mesh(new THREE.ExtrudeGeometry(ringShape2, extrudeSettings), anelMedioLambert);
     meshs.push(anelMedio);
     var anelPequenoLambert = new THREE.MeshLambertMaterial({ color: 0x99ff99, side: THREE.DoubleSide });
     var anelPequenoPhong = new THREE.MeshPhongMaterial({ color: 0x99ff99, side: THREE.DoubleSide });
     var anelPequenoToon = new THREE.MeshToonMaterial({ color: 0x99ff99, side: THREE.DoubleSide});
     var anelPequenoNormal = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
     var anelPequenoBasic = new THREE.MeshBasicMaterial({ color: 0x99ff99, side: THREE.DoubleSide });
-    anelPequeno = new THREE.Mesh(new THREE.RingGeometry(5, 10, 64, 20, 0, 2*Math.PI), anelPequenoLambert);
+
+    const ringShape3 = new THREE.Shape();
+
+    ringShape3.moveTo(10, 0);
+    ringShape3.absarc(0, 0, 10, 0, 2 * Math.PI, false);
+
+    const holePath3 = new THREE.Path();
+
+    // Criação de um buraco para o círculo interno
+    holePath3.moveTo(5, 0);
+    holePath3.absarc(0, 0, 5, 0, 2 * Math.PI, true);
+
+    // Subtrai o círculo interno do externo
+    ringShape3.holes.push(holePath3);
+
+    anelPequeno = new THREE.Mesh(new THREE.ExtrudeGeometry(ringShape3, extrudeSettings), anelPequenoLambert);
     meshs.push(anelPequeno);
 
     anelGrande.position.set(0, 5, 0);
@@ -467,15 +519,15 @@ function update(){
     'use strict';
     if(moveAnelGrande){
         if(anelGrande.userData.movingUp){
-            anelGrande.position.y += 0.25;
+            anelGrande.position.y += 0.1;
             if(anelGrande.position.y >= 30){
                 anelGrande.userData.movingUp = false;
                 anelGrande.userData.movingDown = true;
             }
         }
         if(anelGrande.userData.movingDown){
-            anelGrande.position.y -= 0.25;
-            if(anelGrande.position.y <= 1){
+            anelGrande.position.y -= 0.1;
+            if(anelGrande.position.y <= 5){
                 anelGrande.userData.movingUp = true;
                 anelGrande.userData.movingDown = false;
             }
@@ -483,15 +535,15 @@ function update(){
     }
     if(moveAnelMedio){
         if(anelMedio.userData.movingUp){
-            anelMedio.position.y += 0.25;
+            anelMedio.position.y += 0.1;
             if(anelMedio.position.y >= 30){
                 anelMedio.userData.movingUp = false;
                 anelMedio.userData.movingDown = true;
             }
         }
         if(anelMedio.userData.movingDown){
-            anelMedio.position.y -= 0.25;
-            if(anelMedio.position.y <= 1){
+            anelMedio.position.y -= 0.1;
+            if(anelMedio.position.y <= 5){
                 anelMedio.userData.movingUp = true;
                 anelMedio.userData.movingDown = false;
             }
@@ -499,15 +551,15 @@ function update(){
     }
     if(moveAnelPequeno){
         if(anelPequeno.userData.movingUp){
-            anelPequeno.position.y += 0.25;
+            anelPequeno.position.y += 0.1;
             if(anelPequeno.position.y >= 30){
                 anelPequeno.userData.movingUp = false;
                 anelPequeno.userData.movingDown = true;
             }
         }
         if(anelPequeno.userData.movingDown == true){
-            anelPequeno.position.y -= 0.25;
-            if(anelPequeno.position.y <= 1){
+            anelPequeno.position.y -= 0.1;
+            if(anelPequeno.position.y <= 5){
                 anelPequeno.userData.movingUp = true;
                 anelPequeno.userData.movingDown = false;
             }
@@ -557,7 +609,7 @@ function update(){
         });
     }
 
-    carrossel.rotation.y += 0.01;
+    carrossel.rotation.y += 0.005;
 
     controls.update();
 }
