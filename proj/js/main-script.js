@@ -442,32 +442,46 @@ function createAneis() {
 
 function createFaixaMobius() {
     const mobiusGeometry = new THREE.BufferGeometry();
-    const vertices = [];
-    const indices = [];
-    const segments = 200;
-    const radius = 9, width = 6;
-
-    for (let i = 0; i <= segments; i++) {
-        const t = i / segments * Math.PI * 2;
-        const cosT = Math.cos(t);
-        const sinT = Math.sin(t);
-
-        for (let j = -1; j <= 1; j += 2) {
-            const u = j * width / 2;
-            const x = (radius + u * cosT / 2) * cosT;
-            const y = (radius + u * cosT / 2) * sinT;
-            const z = u * sinT / 2;
-
-            vertices.push(x, y, z);
-        }
-
-        if (i < segments) {
-            const k = i * 2;
-            indices.push(k, k + 1, k + 3);
-            indices.push(k, k + 2, k + 3);
-        }
-    }
-
+    const vertices = 
+        [7.5, 0, 0,
+        10.5, 0, 0,
+        6.67, 3.85, -0.75,
+        8.92, 5.15, 0.75,
+        4.13, 7.14, -1.30,
+        4.88, 8.44, 1.30, 
+        5.51e-16, 9, -1.5,
+        5.51e-16, 9, 1.5, 
+        -4.87, 8.44, -1.30,
+        -4.12, 7.14, 1.30,
+        -8.92, 5.15, -0.75,
+        -6.67, 3.85, 0.75,
+        -10.5, 1.28e-15, -1.84e-16,
+        -7.5, 9.18e-16, 1.84e-16,
+        -8.92, -5.15, 0.75,
+        -6.67, -3.85, -0.75,
+        -4.87, -8.44, 1.30,
+        -4.13, -7.14, -1.30,
+        -1.65e-15, -9, 1.5,
+        -1.65e-15, -9, -1.5,
+        4.13, -7.14, 1.30,
+        4.87, -8.44, -1.30, 
+        6.67, -3.85, 0.75,
+        8.92, -5.15, -0.75,
+        7.5, -1.84e-15, 3.67e-16,
+        10.5, -2.57e-15, -3.67e-16];
+    const indices = [0,1,3, 0,2,3,
+        2,3,5, 2,4,5,
+        4,5,7, 4,6,7,
+        6,7,9, 6,8,9,
+        8,9,11, 8,10,11,
+        10,11,13, 10,12,13,
+        12,13,15, 12,14,15,
+        14,15,17, 14,16,17,
+        16,17,19, 16,18,19,
+        18,19,21, 18,20,21,
+        20,21,23, 20,22,23,
+        22,23,25, 22,24,25];
+        
     mobiusGeometry.setIndex(indices);
     mobiusGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
     mobiusGeometry.computeVertexNormals();
@@ -498,14 +512,6 @@ function createCarrossel() {
 
 }
 
-
-//////////////////////
-/* CHECK COLLISIONS */
-//////////////////////
-function checkCollisions(){
-    'use strict';
-
-}
 
 ///////////////////////
 /* ANIMAÇÃO */
@@ -624,9 +630,8 @@ function updateStereoCamera(){
 function render() {
     'use strict';
     renderer.render(scene, camera);
-    updateStereoCamera(); // Update the stereo camera based on the perspective camera
+    updateStereoCamera(); 
 
-    // Clear the previous rendering
     renderer.clear();
 
 }
@@ -723,7 +728,9 @@ function onKeyDown(event) {
 
         case 84: //T
         case 116: //t
-            currentShading = 'Basic';
+            if ( currentShading == 'Basic') { currentShading = 'Gouraud'; }
+            else {currentShading = 'Basic';}
+
             break;
 
         case 49: // Tecla '1' - Anel grande
@@ -739,27 +746,6 @@ function onKeyDown(event) {
     }
 }
 
-///////////////////////
-/* KEY UP CALLBACK */
-///////////////////////
-/*
-function onKeyUp(e){
-    'use strict';
-    switch (e.keyCode) {
-        case 49: //1
-            moveAnelGrande = false;
-            break;
-        case 50: //2
-            moveAnelMedio = false;
-            break;
-        case 51: //3
-            moveAnelPequeno = false;
-        break;
-
-        
-    }
-
-}*/
 
 init();
 animate();
