@@ -144,7 +144,6 @@ function createParametricBufferGeometry(func, slices, stacks) {
 }
 
 function createSuperficies() {
-    // Define diferentes superfícies paramétricas
     const surfaces = [
         ParametricGeometries.klein,
         ParametricGeometries.plane,
@@ -160,7 +159,6 @@ function createSuperficies() {
     const numSurfacesPerRing = 8;
     const kleinScaleFactor = 0.3;
 
-    // Função auxiliar para criar superfícies
     function createSurfacesForRing(ring_no, ring, ringSuperficies, outerRadius, scaleFactor) {
         spotLights[ring_no] = [];
         for (let i = 0; i < numSurfacesPerRing; i++) {
@@ -232,12 +230,6 @@ function createSuperficies() {
     createSurfacesForRing(1, anelMedio, anelMedioSuperficies, 15, 1.5);  // Outer radius of anelMedio is 15
     createSurfacesForRing(2, anelPequeno, anelPequenoSuperficies, 10, 0.75); // Outer radius of anelPequeno is 10
 
-    // Opcional: Armazena os arrays de superfícies em um objeto para facilitar o acesso posterior
-    scene.userData.anelSuperficies = {
-        anelGrande: anelGrandeSuperficies,
-        anelMedio: anelMedioSuperficies,
-        anelPequeno: anelPequenoSuperficies
-    };
 }
 
 
@@ -248,23 +240,22 @@ function createSkydome(){
         side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
     });
     const skydomeLambert = new THREE.MeshLambertMaterial({
-        map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
-        side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
+        map: new THREE.TextureLoader().load('js/skydome.jpg'), 
+        side: THREE.BackSide, 
     });
     const skydomeToon = new THREE.MeshToonMaterial({
-        map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
-        side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
+        map: new THREE.TextureLoader().load('js/skydome.jpg'), 
+        side: THREE.BackSide, 
     });
     const skydomeNormal = new THREE.MeshNormalMaterial({
-        map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
-        side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
+        map: new THREE.TextureLoader().load('js/skydome.jpg'), 
+        side: THREE.BackSide, 
     });
     const skydomeBasic = new THREE.MeshBasicMaterial({
-        map: new THREE.TextureLoader().load('js/skydome.jpg'), // Carregar a textura do frame do vídeo
-        side: THREE.BackSide, // A textura é aplicada no lado de fora do skydome
+        map: new THREE.TextureLoader().load('js/skydome.jpg'), 
+        side: THREE.BackSide, 
     });
     
-    // Create a mesh with the skydome geometry and multi-material
     skyDome = new THREE.Mesh(skyGeometry, skydomeLambert);
     skyDome.userData = {materials: [skydomeLambert, skydomePhong, skydomeToon, skydomeNormal, skydomeBasic]};
     meshs.push(skyDome);
@@ -305,21 +296,21 @@ function create_Lights(){
     directionalLight = new THREE.DirectionalLight(0xffffff, 4);
     directionalLight.position.set(0, 12, 12)
     directionalLight.target.position.set(0, 0, 0);
-    // light axes helper
+
     scene.add(directionalLight);
     directionalLightOn = true;
 
     const lightColor = 0xffffff;
     const lightIntensity = 10;
-    const lightRadius = 9; // Raio em que as luzes serão distribuídas
+    const lightRadius = 9; 
 
     for (let i = 0; i < 8; i++) {
         const angle = (i / 8) * Math.PI * 2;
         const x = lightRadius * Math.cos(angle);
         const z = lightRadius * Math.sin(angle);
         const light = new THREE.PointLight(lightColor, lightIntensity, 10);
-        light.position.set(x, 39, z); // Colocar as luzes na mesma altura da faixa
-        light.lookAt(faixaMobius.position); // Apontar para a faixa
+        light.position.set(x, 39, z); 
+        light.lookAt(faixaMobius.position); 
         pontualLights.push(light);
         scene.add(light);
     }
@@ -353,22 +344,20 @@ function createAneis() {
     var anelGrandeBasic = new THREE.MeshBasicMaterial({ color: 0xff9933, side: THREE.DoubleSide });
     const ringShape = new THREE.Shape();
 
-    // Desenha o anel começando do círculo externo
     ringShape.moveTo(20, 0);
     ringShape.absarc(0, 0, 20, 0, 2 * Math.PI, false);
 
-    // Criação de um buraco para o círculo interno
+    // buraco para o círculo interno
     const holePath = new THREE.Path();
     holePath.moveTo(15, 0);
     holePath.absarc(0, 0, 15, 0, 2 * Math.PI, true);
 
-    // Subtrai o círculo interno do externo
+    // subtrai o círculo interno do externo
     ringShape.holes.push(holePath);
 
-    // Configuração das opções de extrusão
     const extrudeSettings = {
         steps: 1,
-        depth: 5, // Espessura do anel (pode ser ajustada conforme necessário)
+        depth: 5, 
         bevelEnabled: false
     };
 
@@ -388,11 +377,11 @@ function createAneis() {
 
     const holePath2 = new THREE.Path();
 
-    // Criação de um buraco para o círculo interno
+    // buraco para o círculo interno
     holePath2.moveTo(10, 0);
     holePath2.absarc(0, 0, 10, 0, 2 * Math.PI, true);
 
-    // Subtrai o círculo interno do externo
+    // subtrai o círculo interno do externo
     ringShape2.holes.push(holePath2);
 
     anelMedio = new THREE.Mesh(new THREE.ExtrudeGeometry(ringShape2, extrudeSettings), anelMedioLambert);
@@ -410,11 +399,11 @@ function createAneis() {
 
     const holePath3 = new THREE.Path();
 
-    // Criação de um buraco para o círculo interno
+    // buraco para o círculo interno
     holePath3.moveTo(5, 0);
     holePath3.absarc(0, 0, 5, 0, 2 * Math.PI, true);
 
-    // Subtrai o círculo interno do externo
+    // subtrai o círculo interno do externo
     ringShape3.holes.push(holePath3);
 
     anelPequeno = new THREE.Mesh(new THREE.ExtrudeGeometry(ringShape3, extrudeSettings), anelPequenoLambert);
@@ -486,7 +475,6 @@ function createFaixaMobius() {
     mobiusGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
     mobiusGeometry.computeVertexNormals();
 
-    // Criar e adicionar a faixa de Möbius
     var materialMobiusLambert = new THREE.MeshLambertMaterial({ color: 0xfdfdfd, wireframe: false, side: THREE.DoubleSide});
     var materialMobiusPhong = new THREE.MeshPhongMaterial({ color: 0xfdfdfd, wireframe: false, side: THREE.DoubleSide});
     var materialMobiusToon = new THREE.MeshToonMaterial({ color: 0xfdfdfd , wireframe: false, side: THREE.DoubleSide});
@@ -509,7 +497,6 @@ function createCarrossel() {
     carrossel.add(faixaMobius);
     carrossel.add(skyDome)
     scene.add(carrossel);
-
 }
 
 
@@ -656,7 +643,6 @@ function init() {
 
     window.addEventListener("resize", onResize);
     window.addEventListener("keydown", onKeyDown);
-    //window.addEventListener('keyup', onKeyUp);
 }
 
 /////////////////////
